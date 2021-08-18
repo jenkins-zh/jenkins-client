@@ -1,0 +1,36 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+bin/
+release/
+jcli
+
+*.xml
+
+mock
+
+# goland
+.idea
+*/**/.DS_Store
+.DS_Store
+
+# test files
+app/cmd/test.yaml
+
+# language
+#app/i18n/bindata.go
+app/i18n/jcli/zh_CN/LC_MESSAGES/jcli.mo
+app/i18n/jcli.pot
+
+# snap package
+*.snap
