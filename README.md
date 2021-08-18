@@ -5,7 +5,7 @@
 go.mod
 
 ```
-require github.com/johnniang/jenkins-client
+require github.com/jenkins-zh/jenkins-client
 ```
 
 ## Configuration

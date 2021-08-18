@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/johnniang/jenkins-client/client/util"
+	"github.com/jenkins-zh/jenkins-client/client/util"
 	"go.uber.org/zap"
 	"io"
 	"io/ioutil"

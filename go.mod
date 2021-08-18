@@ -1,4 +1,4 @@
-module github.com/johnniang/jenkins-client
+module github.com/jenkins-zh/jenkins-client
 
 go 1.16
 

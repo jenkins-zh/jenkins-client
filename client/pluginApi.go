@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/johnniang/jenkins-client/client/util"
+	"github.com/jenkins-zh/jenkins-client/client/util"
 	"io/ioutil"
 	"log"
 	"net/http"

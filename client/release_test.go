@@ -1,7 +1,7 @@
 package client_test
 
 import (
-	"github.com/johnniang/jenkins-client/client"
+	"github.com/jenkins-zh/jenkins-client/client"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
