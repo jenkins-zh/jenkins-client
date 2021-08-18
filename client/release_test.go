@@ -1,13 +1,13 @@
 package client_test
 
 import (
-	jClient "github.com/jenkins-zh/jenkins-cli/client"
+	"github.com/johnniang/jenkins-client/client"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestInit(t *testing.T) {
-	ghClient := jClient.GitHubReleaseClient{}
+	ghClient := client.GitHubReleaseClient{}
 
 	assert.Nil(t, ghClient.Client)
 	ghClient.Init()
@@ -15,11 +15,11 @@ func TestInit(t *testing.T) {
 }
 
 func TestGetLatestReleaseAsset(t *testing.T) {
-	client, teardown := jClient.PrepareForGetLatestReleaseAsset() //setup()
+	c, teardown := client.PrepareForGetLatestReleaseAsset() //setup()
 	defer teardown()
 
-	ghClient := jClient.GitHubReleaseClient{
-		Client: client,
+	ghClient := client.GitHubReleaseClient{
+		Client: c,
 	}
 	asset, err := ghClient.GetLatestReleaseAsset("o", "r")
 
@@ -30,11 +30,11 @@ func TestGetLatestReleaseAsset(t *testing.T) {
 }
 
 func TestGetLatestJCLIAsset(t *testing.T) {
-	client, teardown := jClient.PrepareForGetLatestJCLIAsset() //setup()
+	c, teardown := client.PrepareForGetLatestJCLIAsset() //setup()
 	defer teardown()
 
-	ghClient := jClient.GitHubReleaseClient{
-		Client: client,
+	ghClient := client.GitHubReleaseClient{
+		Client: c,
 	}
 	asset, err := ghClient.GetLatestJCLIAsset()
 
@@ -45,11 +45,11 @@ func TestGetLatestJCLIAsset(t *testing.T) {
 }
 
 func TestGetJCLIAsset(t *testing.T) {
-	client, teardown := jClient.PrepareForGetJCLIAsset("tagName") //setup()
+	c, teardown := client.PrepareForGetJCLIAsset("tagName") //setup()
 	defer teardown()
 
-	ghClient := jClient.GitHubReleaseClient{
-		Client: client,
+	ghClient := client.GitHubReleaseClient{
+		Client: c,
 	}
 	asset, err := ghClient.GetJCLIAsset("tagName")
 
@@ -60,11 +60,11 @@ func TestGetJCLIAsset(t *testing.T) {
 }
 
 func TestGetReleaseAssetByTagName(t *testing.T) {
-	client, teardown := jClient.PrepareForGetReleaseAssetByTagName() //setup()
+	c, teardown := client.PrepareForGetReleaseAssetByTagName() //setup()
 	defer teardown()
 
-	ghClient := jClient.GitHubReleaseClient{
-		Client: client,
+	ghClient := client.GitHubReleaseClient{
+		Client: c,
 	}
 	asset, err := ghClient.GetReleaseAssetByTagName("jenkins-zh", "jenkins-cli", "tagName")
 

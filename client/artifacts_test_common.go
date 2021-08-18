@@ -3,10 +3,9 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"github.com/johnniang/jenkins-client/client/mock/mhttp"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/jenkins-zh/jenkins-cli/mock/mhttp"
 )
 
 // PrepareGetArtifacts only for test

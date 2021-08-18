@@ -2,7 +2,7 @@ package client
 
 import (
 	"fmt"
-	"github.com/jenkins-zh/jenkins-cli/mock/mhttp"
+	"github.com/johnniang/jenkins-client/client/mock/mhttp"
 	"net/http"
 )
 

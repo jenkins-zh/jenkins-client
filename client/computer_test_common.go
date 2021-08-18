@@ -3,12 +3,12 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"github.com/johnniang/jenkins-client/client/mock/mhttp"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/jenkins-zh/jenkins-cli/mock/mhttp"
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 )
 

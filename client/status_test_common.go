@@ -3,7 +3,7 @@ package client
 import (
 	"bytes"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-cli/mock/mhttp"
+	"github.com/johnniang/jenkins-client/client/mock/mhttp"
 	"io/ioutil"
 	"net/http"
 )

@@ -4,13 +4,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/johnniang/jenkins-client/client/util"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
 	"strings"
 
-	"github.com/jenkins-zh/jenkins-cli/util"
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 	"go.uber.org/zap"
 )

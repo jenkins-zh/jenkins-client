@@ -3,11 +3,11 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"github.com/johnniang/jenkins-client/client/mock/mhttp"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/golang/mock/gomock"
-	"github.com/jenkins-zh/jenkins-cli/mock/mhttp"
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

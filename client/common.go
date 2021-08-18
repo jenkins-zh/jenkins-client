@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/johnniang/jenkins-client/client/util"
 	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
@@ -13,7 +14,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jenkins-zh/jenkins-cli/util"
 	ext "github.com/linuxsuren/cobra-extension/version"
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 )

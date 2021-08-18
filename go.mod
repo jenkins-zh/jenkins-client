@@ -6,7 +6,6 @@ require (
 	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-github/v29 v29.0.3
-	github.com/jenkins-zh/jenkins-cli v0.0.37
 	github.com/linuxsuren/cobra-extension v0.0.10
 	github.com/linuxsuren/http-downloader v0.0.29
 	github.com/onsi/ginkgo v1.16.4

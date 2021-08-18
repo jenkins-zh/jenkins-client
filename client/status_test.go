@@ -2,7 +2,7 @@ package client
 
 import (
 	"github.com/golang/mock/gomock"
-	"github.com/jenkins-zh/jenkins-cli/mock/mhttp"
+	"github.com/johnniang/jenkins-client/client/mock/mhttp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

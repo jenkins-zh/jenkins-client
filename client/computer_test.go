@@ -2,8 +2,8 @@ package client_test
 
 import (
 	"github.com/golang/mock/gomock"
-	"github.com/jenkins-zh/jenkins-cli/client"
-	"github.com/jenkins-zh/jenkins-cli/mock/mhttp"
+	"github.com/johnniang/jenkins-client/client"
+	"github.com/johnniang/jenkins-client/client/mock/mhttp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
