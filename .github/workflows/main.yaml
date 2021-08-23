@@ -1,9 +1,12 @@
 name: Workflow for Jenkins Client
 
 on:
-  - push
-  - pull_request
-  - release
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - 'main'
 
 jobs:
   LintAndTest:
@@ -34,3 +37,11 @@ jobs:
           skip-pkg-cache: true
       - name: test
         run: make test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: cover.out
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
