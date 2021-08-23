@@ -443,6 +443,12 @@ func PrepareForUpdatePipelineJob(roundTripper *mhttp.MockRoundTripper, rootURL, 
 // PrepareCommonPost only for test
 func PrepareCommonPost(request *http.Request, responseBody string, roundTripper *mhttp.MockRoundTripper, user, passwd, rootURL string) (
 	response *http.Response) {
+	// common crumb request
+	PrepareForGetIssuer(roundTripper, rootURL, user, passwd)
+
+	if user != "" && passwd != "" {
+		request.SetBasicAuth(user, passwd)
+	}
 	request.Header.Add("CrumbRequestField", "Crumb")
 	response = &http.Response{
 		StatusCode: 200,
@@ -451,11 +457,5 @@ func PrepareCommonPost(request *http.Request, responseBody string, roundTripper 
 	}
 	roundTripper.EXPECT().
 		RoundTrip(NewVerboseRequestMatcher(request).WithBody().WithQuery()).Return(response, nil)
-
-	// common crumb request
-	PrepareForGetIssuer(roundTripper, rootURL, user, passwd)
-	if user != "" && passwd != "" {
-		request.SetBasicAuth(user, passwd)
-	}
 	return
 }

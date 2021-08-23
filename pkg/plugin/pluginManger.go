@@ -194,14 +194,14 @@ func (p *Manager) installPluginsWithVersion(plugins []string) (err error) {
 
 // installPluginWithVersion install a plugin by name & version
 func (p *Manager) installPluginWithVersion(name string) (err error) {
-	pluginName := "%s.hpi"
+	pluginName := fmt.Sprintf("%s.hpi", strings.Split(name, "@")[0])
 	defer func(name string) {
 		// ignore error
 		_ = os.Remove(name)
-	}(fmt.Sprintf(pluginName, name))
+	}(pluginName)
 
 	if err = p.DownloadPluginWithVersion(name); err == nil {
-		err = p.Upload(fmt.Sprintf(pluginName, name))
+		err = p.Upload(pluginName)
 	}
 	return
 }
