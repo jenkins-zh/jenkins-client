@@ -131,8 +131,8 @@ type User struct {
 
 // UserForCreate is the data for creatig a user
 type UserForCreate struct {
-	User     `json:",inline"`
-	Username string `json:"username"`
+	User      `json:",inline"`
+	Username  string `json:"username"`
 	Password1 string `json:"password1"`
 	Password2 string `json:"password2"`
 	Email     string `json:"email"`

@@ -18,8 +18,8 @@ var _ = Describe("PluginManager test", func() {
 	var (
 		ctrl         *gomock.Controller
 		roundTripper *mhttp.MockRoundTripper
-		pluginMgr PluginManager
-		updateMgr UpdateCenterManager
+		pluginMgr    PluginManager
+		updateMgr    UpdateCenterManager
 	)
 
 	BeforeEach(func() {

@@ -18,20 +18,20 @@ type View struct {
 
 // JenkinsStatus holds the status of Jenkins
 type JenkinsStatus struct {
-	AssignedLabels []AgentLabel
-	Description    string
-	Jobs           []Job
-	Mode           string
+	AssignedLabels  []AgentLabel
+	Description     string
+	Jobs            []Job
+	Mode            string
 	NodeDescription string
 	NodeName        string
-	NumExecutors   int
-	PrimaryView    View
-	QuietingDown   bool
+	NumExecutors    int
+	PrimaryView     View
+	QuietingDown    bool
 	SlaveAgentPort  int
 	UseCrumbs       bool
-	UseSecurity    bool
-	Views          []View
-	Version        string
+	UseSecurity     bool
+	Views           []View
+	Version         string
 }
 
 // JenkinsStatusClient use to connect with Jenkins status

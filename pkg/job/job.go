@@ -534,7 +534,7 @@ type SimpleJobBuild struct {
 // JobBuild represents a job build
 type JobBuild struct {
 	SimpleJobBuild
-	Building      bool
+	Building          bool
 	Description       string
 	DisplayName       string
 	Duration          int64
@@ -544,9 +544,9 @@ type JobBuild struct {
 	KeepLog           bool
 	QueueID           int
 	Result            string
-	Timestamp     int64
-	PreviousBuild SimpleJobBuild
-	NextBuild     SimpleJobBuild
+	Timestamp         int64
+	PreviousBuild     SimpleJobBuild
+	NextBuild         SimpleJobBuild
 }
 
 // Pipeline represents a pipeline

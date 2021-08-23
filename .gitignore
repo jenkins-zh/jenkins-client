@@ -26,6 +26,8 @@ jcli
 
 # test files
 app/cmd/test.yaml
+cover.out
+*.hpi
 
 # language
 #app/i18n/bindata.go

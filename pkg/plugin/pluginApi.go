@@ -43,9 +43,9 @@ type PluginDependency struct {
 
 // PluginInfo hold the info of a plugin
 type PluginInfo struct {
-	BuildDate        string             `json:"buildDate"`
-	Dependencies     []PluginDependency `json:"dependencies"`
-	Excerpt          string             `json:"excerpt"`
+	BuildDate         string             `json:"buildDate"`
+	Dependencies      []PluginDependency `json:"dependencies"`
+	Excerpt           string             `json:"excerpt"`
 	FirstRelease      string             `json:"firstRelease"`
 	Gav               string             `json:"gav"`
 	Name              string             `json:"name"`
@@ -55,9 +55,9 @@ type PluginInfo struct {
 	RequireCore       string             `json:"RequireCore"`
 	Title             string             `json:"title"`
 	URL               string             `json:"url"`
-	Version          string             `json:"version"`
-	SecurityWarnings []SecurityWarning  `json:"securityWarnings"`
-	Stats            PluginInfoStats
+	Version           string             `json:"version"`
+	SecurityWarnings  []SecurityWarning  `json:"securityWarnings"`
+	Stats             PluginInfoStats
 }
 
 // PluginInfoStats is the plugin info stats

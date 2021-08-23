@@ -90,9 +90,9 @@ type InstallStatesJob struct {
 // CenterPlugin represents the all plugin from UpdateCenter
 type CenterPlugin struct {
 	CompatibleWithInstalledVersion bool
-	Excerpt            string
-	Installed          InstalledPlugin
-	MinimumJavaVersion string
+	Excerpt                        string
+	Installed                      InstalledPlugin
+	MinimumJavaVersion             string
 	Name                           string
 	RequiredCore                   string
 	SourceID                       string

@@ -143,17 +143,17 @@ func GetPayloadForCreateAgent(name string) *strings.Reader {
 
 // Computer is the agent of Jenkins
 type Computer struct {
-	AssignedLabels     []ComputerLabel
-	Description        string
+	AssignedLabels      []ComputerLabel
+	Description         string
 	DisplayName         string
 	Idle                bool
 	JnlpAgent           bool
 	LaunchSupported     bool
 	ManualLaunchAllowed bool
 	NumExecutors        int
-	Offline            bool
-	OfflineCause       OfflineCause
-	OfflineCauseReason string
+	Offline             bool
+	OfflineCause        OfflineCause
+	OfflineCauseReason  string
 	TemporarilyOffline  bool
 }
 
