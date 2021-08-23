@@ -37,7 +37,11 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
+GOLANGCI_LINT = $(shell pwd)/bin/golangci-lint
+lint: ## Run golangci-lint against codes.
+	$(call go-get-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint@v1.41.1)
+	$(GOLANGCI_LINT) run
+
 test: fmt vet ## Run tests.
 	go test ./... -coverprofile cover.out
 
@@ -50,7 +54,7 @@ TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
+GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
