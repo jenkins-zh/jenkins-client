@@ -43,6 +43,7 @@ lint: ## Run golangci-lint against codes.
 	$(GOLANGCI_LINT) run
 
 test: fmt vet ## Run tests.
+	go mod tidy
 	go test ./... -coverprofile cover.out
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
