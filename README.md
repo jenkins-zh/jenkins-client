@@ -1,3 +1,8 @@
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/jenkins-zh/jenkins-client)
+[![](https://goreportcard.com/badge/jenkins-zh/jenkins-client)](https://goreportcard.com/report/jenkins-zh/jenkins-client)
+[![codecov](https://codecov.io/gh/jenkins-zh/jenkins-client/branch/main/graph/badge.svg?token=8N1vvFPxPm)](https://codecov.io/gh/jenkins-zh/jenkins-client)
+[![Contributors](https://img.shields.io/github/contributors/jenkins-zh/jenkins-client.svg)](https://github.com/jenkins-zh/jenkins-client/graphs/contributors)
+
 # jenkins-client Document
 
 ## How to get it
