@@ -12,7 +12,6 @@ var _ = Describe("collect test", func() {
 			max, min := MaxAndMin(data)
 			Expect(max).To(Equal(0.4))
 			Expect(min).To(Equal(0.1))
-			return
 		})
 
 		It("empty collect, should success", func() {
@@ -20,7 +19,6 @@ var _ = Describe("collect test", func() {
 			max, min := MaxAndMin(data)
 			Expect(max).To(Equal(0.0))
 			Expect(min).To(Equal(0.0))
-			return
 		})
 
 		It("only one item, should success", func() {
@@ -28,7 +26,6 @@ var _ = Describe("collect test", func() {
 			max, min := MaxAndMin(data)
 			Expect(max).To(Equal(0.3))
 			Expect(min).To(Equal(0.3))
-			return
 		})
 	})
 
@@ -37,7 +34,6 @@ var _ = Describe("collect test", func() {
 			data := []float64{1512, 3472, 4385, 3981}
 			buf := PrintCollectTrend(data)
 			Expect(buf).NotTo(Equal(""))
-			return
 		})
 	})
 })

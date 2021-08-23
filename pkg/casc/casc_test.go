@@ -12,13 +12,13 @@ var _ = Describe("", func() {
 	var (
 		ctrl         *gomock.Controller
 		roundTripper *mhttp.MockRoundTripper
-		cascManager  casc.CASCManager
+		cascManager  casc.Manager
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
-		cascManager = casc.CASCManager{}
+		cascManager = casc.Manager{}
 		cascManager.RoundTripper = roundTripper
 		cascManager.URL = "http://localhost"
 	})

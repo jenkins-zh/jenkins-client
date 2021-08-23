@@ -167,7 +167,7 @@ func PrepareForUploadPlugin(roundTripper *mhttp.MockRoundTripper, rootURL string
 	writer := multipart.NewWriter(bytesBuffer)
 	part, _ := writer.CreateFormFile("@name", filepath.Base(tmpfile.Name()))
 
-	io.Copy(part, tmpfile)
+	_, _ = io.Copy(part, tmpfile)
 
 	request, _ = http.NewRequest(http.MethodPost, fmt.Sprintf("%s/pluginManager/uploadPlugin", rootURL), nil)
 	request.Header.Add("CrumbRequestField", "Crumb")
@@ -438,7 +438,6 @@ func PrepareForUpdatePipelineJob(roundTripper *mhttp.MockRoundTripper, rootURL, 
 	formData.Add("script", script)
 	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/job/test/restFul/update?%s", rootURL, formData.Encode()), nil)
 	PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
-	return
 }
 
 // PrepareCommonPost only for test

@@ -28,15 +28,15 @@ const (
 	FileParameterDefinition = "FileParameterDefinition"
 )
 
-// JobClient is client for operate jobs
-type JobClient struct {
+// Client is client for operate jobs
+type Client struct {
 	core.JenkinsCore
 
 	Parent string
 }
 
 // Search find a set of jobs by name
-func (q *JobClient) Search(name, kind string, start, limit int) (items []JenkinsItem, err error) {
+func (q *Client) Search(name, kind string, start, limit int) (items []JenkinsItem, err error) {
 	err = q.RequestWithData(http.MethodGet, fmt.Sprintf("/items/list?name=%s&type=%s&start=%d&limit=%d&parent=%s",
 		name, kind, start, limit, q.Parent),
 		nil, nil, 200, &items)
@@ -44,7 +44,7 @@ func (q *JobClient) Search(name, kind string, start, limit int) (items []Jenkins
 }
 
 // SearchViaBlue searches jobs via the BlueOcean API
-func (q *JobClient) SearchViaBlue(name string, start, limit int) (items []JenkinsItem, err error) {
+func (q *Client) SearchViaBlue(name string, start, limit int) (items []JenkinsItem, err error) {
 	api := fmt.Sprintf("/blue/rest/search/?q=pipeline:*%s*;type:pipeline;organization:jenkins;excludedFromFlattening=jenkins.branch.MultiBranchProject,com.cloudbees.hudson.plugins.folder.AbstractFolder&filter=no-folders&start=%d&limit=%d",
 		name, start, limit)
 	err = q.RequestWithData(http.MethodGet, api,
@@ -53,7 +53,7 @@ func (q *JobClient) SearchViaBlue(name string, start, limit int) (items []Jenkin
 }
 
 // Build trigger a job
-func (q *JobClient) Build(jobName string) (err error) {
+func (q *Client) Build(jobName string) (err error) {
 	path := ParseJobPath(jobName)
 	_, err = q.RequestWithoutData(http.MethodPost, fmt.Sprintf("%s/build", path), nil, nil, 201)
 	return
@@ -61,7 +61,7 @@ func (q *JobClient) Build(jobName string) (err error) {
 
 // IdentityBuild is the build which carry the identity cause
 type IdentityBuild struct {
-	Build JobBuild
+	Build Build
 	Cause IdentityCause
 }
 
@@ -73,7 +73,7 @@ type IdentityCause struct {
 }
 
 // BuildAndReturn trigger a job then returns the build info
-func (q *JobClient) BuildAndReturn(jobName, cause string, timeout, delay int) (build IdentityBuild, err error) {
+func (q *Client) BuildAndReturn(jobName, cause string, timeout, delay int) (build IdentityBuild, err error) {
 	path := ParseJobPath(jobName)
 
 	api := fmt.Sprintf("%s/restFul/build?1=1", path)
@@ -92,7 +92,7 @@ func (q *JobClient) BuildAndReturn(jobName, cause string, timeout, delay int) (b
 }
 
 // GetBuild get build information of a job
-func (q *JobClient) GetBuild(jobName string, id int) (job *JobBuild, err error) {
+func (q *Client) GetBuild(jobName string, id int) (job *Build, err error) {
 	path := ParseJobPath(jobName)
 	var api string
 	if id == -1 {
@@ -106,13 +106,16 @@ func (q *JobClient) GetBuild(jobName string, id int) (job *JobBuild, err error) 
 }
 
 // BuildWithParams build a job which has params
-func (q *JobClient) BuildWithParams(jobName string, parameters []ParameterDefinition) (err error) {
+func (q *Client) BuildWithParams(jobName string, parameters []ParameterDefinition) (err error) {
 	path := ParseJobPath(jobName)
 	api := fmt.Sprintf("%s/build", path)
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	defer writer.Close()
+	defer func(writer *multipart.Writer) {
+		// ignore error
+		_ = writer.Close()
+	}(writer)
 
 	hasFileParam := false
 	stringParameters := make([]ParameterDefinition, 0, len(parameters))
@@ -124,7 +127,10 @@ func (q *JobClient) BuildWithParams(jobName string, parameters []ParameterDefini
 			if err != nil {
 				return err
 			}
-			defer file.Close()
+			defer func(file *os.File) {
+				// ignore error
+				_ = file.Close()
+			}(file)
 
 			var fWriter io.Writer
 			fWriter, err = writer.CreateFormFile(parameter.Filepath, filepath.Base(parameter.Filepath))
@@ -169,7 +175,7 @@ func (q *JobClient) BuildWithParams(jobName string, parameters []ParameterDefini
 }
 
 // DisableJob disable a job
-func (q *JobClient) DisableJob(jobName string) (err error) {
+func (q *Client) DisableJob(jobName string) (err error) {
 	path := ParseJobPath(jobName)
 	api := fmt.Sprintf("%s/disable", path)
 
@@ -178,7 +184,7 @@ func (q *JobClient) DisableJob(jobName string) (err error) {
 }
 
 // EnableJob disable a job
-func (q *JobClient) EnableJob(jobName string) (err error) {
+func (q *Client) EnableJob(jobName string) (err error) {
 	path := ParseJobPath(jobName)
 	api := fmt.Sprintf("%s/enable", path)
 
@@ -187,7 +193,7 @@ func (q *JobClient) EnableJob(jobName string) (err error) {
 }
 
 // StopJob stops a job build
-func (q *JobClient) StopJob(jobName string, num int) (err error) {
+func (q *Client) StopJob(jobName string, num int) (err error) {
 	path := ParseJobPath(jobName)
 
 	var api string
@@ -202,7 +208,7 @@ func (q *JobClient) StopJob(jobName string, num int) (err error) {
 }
 
 // GetJob returns the job info
-func (q *JobClient) GetJob(name string) (job *Job, err error) {
+func (q *Client) GetJob(name string) (job *Job, err error) {
 	path := ParseJobPath(name)
 	api := fmt.Sprintf("%s/api/json", path)
 
@@ -211,7 +217,7 @@ func (q *JobClient) GetJob(name string) (job *Job, err error) {
 }
 
 // AddParameters add parameters to a Pipeline
-func (q *JobClient) AddParameters(name, parameters string) (err error) {
+func (q *Client) AddParameters(name, parameters string) (err error) {
 	path := ParseJobPath(name)
 	api := fmt.Sprintf("%s/restFul/addParameter", path)
 
@@ -224,7 +230,7 @@ func (q *JobClient) AddParameters(name, parameters string) (err error) {
 }
 
 // RemoveParameters add parameters to a Pipeline
-func (q *JobClient) RemoveParameters(name, parameters string) (err error) {
+func (q *Client) RemoveParameters(name, parameters string) (err error) {
 	path := ParseJobPath(name)
 	api := fmt.Sprintf("%s/restFul/removeParameter?params=%s", path, parameters)
 
@@ -233,7 +239,7 @@ func (q *JobClient) RemoveParameters(name, parameters string) (err error) {
 }
 
 // GetJobTypeCategories returns all categories of jobs
-func (q *JobClient) GetJobTypeCategories() (jobCategories []JobCategory, err error) {
+func (q *Client) GetJobTypeCategories() (jobCategories []Category, err error) {
 	var (
 		statusCode int
 		data       []byte
@@ -242,7 +248,7 @@ func (q *JobClient) GetJobTypeCategories() (jobCategories []JobCategory, err err
 	if statusCode, data, err = q.Request("GET", "/view/all/itemCategories?depth=3", nil, nil); err == nil {
 		if statusCode == 200 {
 			type innerJobCategories struct {
-				Categories []JobCategory
+				Categories []Category
 			}
 			result := &innerJobCategories{}
 			err = json.Unmarshal(data, result)
@@ -255,7 +261,7 @@ func (q *JobClient) GetJobTypeCategories() (jobCategories []JobCategory, err err
 }
 
 // GetPipeline return the pipeline object
-func (q *JobClient) GetPipeline(name string) (pipeline *Pipeline, err error) {
+func (q *Client) GetPipeline(name string) (pipeline *Pipeline, err error) {
 	path := ParseJobPath(name)
 	api := fmt.Sprintf("%s/restFul", path)
 	err = q.RequestWithData("GET", api, nil, nil, 200, &pipeline)
@@ -263,7 +269,7 @@ func (q *JobClient) GetPipeline(name string) (pipeline *Pipeline, err error) {
 }
 
 // UpdatePipeline updates the pipeline script
-func (q *JobClient) UpdatePipeline(name, script string) (err error) {
+func (q *Client) UpdatePipeline(name, script string) (err error) {
 	formData := url.Values{}
 	formData.Add("script", script)
 
@@ -275,12 +281,12 @@ func (q *JobClient) UpdatePipeline(name, script string) (err error) {
 }
 
 // GetHistory returns the build history of a job
-func (q *JobClient) GetHistory(name string) (builds []*JobBuild, err error) {
+func (q *Client) GetHistory(name string) (builds []*Build, err error) {
 	var job *Job
 	if job, err = q.GetJob(name); err == nil {
 		buildList := job.Builds // only contains basic info
 
-		var build *JobBuild
+		var build *Build
 		for _, buildItem := range buildList {
 			build, err = q.GetBuild(name, buildItem.Number)
 			if err != nil {
@@ -293,7 +299,7 @@ func (q *JobClient) GetHistory(name string) (builds []*JobBuild, err error) {
 }
 
 // DeleteHistory returns the build history of a job
-func (q *JobClient) DeleteHistory(jobName string, num int) (err error) {
+func (q *Client) DeleteHistory(jobName string, num int) (err error) {
 	path := ParseJobPath(jobName)
 	api := fmt.Sprintf("%s/%d/doDelete", path, num)
 	_, err = q.RequestWithoutData(http.MethodPost, api, nil, nil, 200)
@@ -301,7 +307,7 @@ func (q *JobClient) DeleteHistory(jobName string, num int) (err error) {
 }
 
 // Log get the log of a job
-func (q *JobClient) Log(jobName string, history int, start int64) (jobLog JobLog, err error) {
+func (q *Client) Log(jobName string, history int, start int64) (jobLog Log, err error) {
 	path := ParseJobPath(jobName)
 	var api string
 	if history == -1 {
@@ -323,7 +329,7 @@ func (q *JobClient) Log(jobName string, history int, start int64) (jobLog JobLog
 	}
 
 	client := q.GetClient()
-	jobLog = JobLog{
+	jobLog = Log{
 		HasMore:   false,
 		Text:      "",
 		NextStart: int64(0),
@@ -357,12 +363,12 @@ type CreateJobPayload struct {
 }
 
 // Create can create a job
-func (q *JobClient) Create(jobPayload CreateJobPayload) (err error) {
+func (q *Client) Create(jobPayload CreateJobPayload) (err error) {
 	return q.CreateJobInFolder(jobPayload, "")
 }
 
 // CreateJobInFolder creates a job in a specific folder and create folder first if the folder does not exist
-func (q *JobClient) CreateJobInFolder(jobPayload CreateJobPayload, path string) (err error) {
+func (q *Client) CreateJobInFolder(jobPayload CreateJobPayload, path string) (err error) {
 	// create a job in path
 	playLoadData, _ := json.Marshal(jobPayload)
 	formData := url.Values{
@@ -384,7 +390,7 @@ func (q *JobClient) CreateJobInFolder(jobPayload CreateJobPayload, path string) 
 }
 
 // Delete will delete a job by name
-func (q *JobClient) Delete(jobName string) (err error) {
+func (q *Client) Delete(jobName string) (err error) {
 	var (
 		statusCode int
 	)
@@ -404,7 +410,7 @@ func (q *JobClient) Delete(jobName string) (err error) {
 }
 
 // GetJobInputActions returns the all pending actions
-func (q *JobClient) GetJobInputActions(jobName string, buildID int) (actions []JobInputItem, err error) {
+func (q *Client) GetJobInputActions(jobName string, buildID int) (actions []InputItem, err error) {
 	path := ParseJobPath(jobName)
 	err = q.RequestWithData("GET", fmt.Sprintf("%s/%d/wfapi/pendingInputActions", path, buildID), nil, nil, 200, &actions)
 	return
@@ -416,7 +422,7 @@ type JenkinsInputParametersRequest struct {
 }
 
 // JobInputSubmit submit the pending input request
-func (q *JobClient) JobInputSubmit(jobName, inputID string, buildID int, abort bool, params map[string]string) (err error) {
+func (q *Client) JobInputSubmit(jobName, inputID string, buildID int, abort bool, params map[string]string) (err error) {
 	jobPath := ParseJobPath(jobName)
 	var api string
 	if abort {
@@ -460,8 +466,8 @@ func ParseJobPath(jobName string) (path string) {
 	return
 }
 
-// JobLog holds the log text
-type JobLog struct {
+// Log holds the log text
+type Log struct {
 	HasMore   bool
 	NextStart int64
 	Text      string
@@ -493,7 +499,7 @@ type JenkinsItem struct {
 // Job represents a job
 type Job struct {
 	Type            string `json:"_class"`
-	Builds          []JobBuild
+	Builds          []Build
 	Color           string
 	ConcurrentBuild bool
 	Name            string
@@ -531,8 +537,8 @@ type SimpleJobBuild struct {
 	URL    string
 }
 
-// JobBuild represents a job build
-type JobBuild struct {
+// Build represents a job build
+type Build struct {
 	SimpleJobBuild
 	Building          bool
 	Description       string
@@ -555,26 +561,26 @@ type Pipeline struct {
 	Sandbox bool
 }
 
-// JobCategory represents a job category
-type JobCategory struct {
+// Category represents a job category
+type Category struct {
 	Description string
 	ID          string
-	Items       []JobCategoryItem
+	Items       []CategoryItem
 	MinToShow   int
 	Name        string
 	Order       int
 }
 
-// JobCategoryItem represents a job category item
-type JobCategoryItem struct {
+// CategoryItem represents a job category item
+type CategoryItem struct {
 	Description string
 	DisplayName string
 	Order       int
 	Class       string
 }
 
-// JobInputItem represents a job input action
-type JobInputItem struct {
+// InputItem represents a job input action
+type InputItem struct {
 	ID                  string
 	AbortURL            string
 	Message             string

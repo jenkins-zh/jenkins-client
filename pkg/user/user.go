@@ -15,8 +15,8 @@ import (
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 )
 
-// UserClient for connect the user
-type UserClient struct {
+// Client for connect the user
+type Client struct {
 	core.JenkinsCore
 }
 
@@ -35,14 +35,14 @@ type TokenData struct {
 }
 
 // Get returns a user's detail
-func (q *UserClient) Get() (status *User, err error) {
+func (q *Client) Get() (status *User, err error) {
 	api := fmt.Sprintf("/user/%s/api/json", q.UserName)
 	err = q.RequestWithData(http.MethodGet, api, nil, nil, 200, &status)
 	return
 }
 
 // EditDesc update the description of a user
-func (q *UserClient) EditDesc(description string) (err error) {
+func (q *Client) EditDesc(description string) (err error) {
 	formData := url.Values{}
 	formData.Add("description", description)
 	payload := strings.NewReader(formData.Encode())
@@ -52,14 +52,14 @@ func (q *UserClient) EditDesc(description string) (err error) {
 }
 
 // Delete will remove a user from Jenkins
-func (q *UserClient) Delete(username string) (err error) {
+func (q *Client) Delete(username string) (err error) {
 	_, err = q.RequestWithoutData(http.MethodPost, fmt.Sprintf("/securityRealm/user/%s/doDelete", username),
 		map[string]string{httpdownloader.ContentType: httpdownloader.ApplicationForm}, nil, 200)
 	return
 }
 
-func genSimpleUserAsPayload(username, password string) (payload io.Reader, user *UserForCreate) {
-	user = &UserForCreate{
+func genSimpleUserAsPayload(username, password string) (payload io.Reader, user *ForCreate) {
+	user = &ForCreate{
 		User:      User{FullName: username},
 		Username:  username,
 		Password1: password,
@@ -81,7 +81,7 @@ func genSimpleUserAsPayload(username, password string) (payload io.Reader, user 
 }
 
 // Create will create a user in Jenkins
-func (q *UserClient) Create(username, password string) (user *UserForCreate, err error) {
+func (q *Client) Create(username, password string) (user *ForCreate, err error) {
 	var (
 		payload io.Reader
 		code    int
@@ -101,7 +101,7 @@ func (q *UserClient) Create(username, password string) (user *UserForCreate, err
 }
 
 // CreateToken create a token in Jenkins
-func (q *UserClient) CreateToken(targetUser, newTokenName string) (status *Token, err error) {
+func (q *Client) CreateToken(targetUser, newTokenName string) (status *Token, err error) {
 	if newTokenName == "" {
 		newTokenName = fmt.Sprintf("jcli-%s", randomdata.SillyName())
 	}
@@ -129,8 +129,8 @@ type User struct {
 	ID          string
 }
 
-// UserForCreate is the data for creatig a user
-type UserForCreate struct {
+// ForCreate is the data for creating a user
+type ForCreate struct {
 	User      `json:",inline"`
 	Username  string `json:"username"`
 	Password1 string `json:"password1"`

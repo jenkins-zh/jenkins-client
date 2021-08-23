@@ -14,7 +14,6 @@ func PrepareRestart(roundTripper *mhttp.MockRoundTripper, rootURL, user, passwor
 	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/safeRestart", rootURL), nil)
 	response := PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
 	response.StatusCode = statusCode
-	return
 }
 
 // PrepareRestartDirectly only for test
@@ -22,7 +21,6 @@ func PrepareRestartDirectly(roundTripper *mhttp.MockRoundTripper, rootURL, user,
 	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/restart", rootURL), nil)
 	response := PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
 	response.StatusCode = statusCode
-	return
 }
 
 // PrepareForShutdown only for test
@@ -34,7 +32,6 @@ func PrepareForShutdown(roundTripper *mhttp.MockRoundTripper, rootURL, user, pas
 		request, _ = http.NewRequest(http.MethodPost, fmt.Sprintf("%s/exit", rootURL), nil)
 	}
 	PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
-	return
 }
 
 // PrepareForCancelShutdown only for test
@@ -46,7 +43,6 @@ func PrepareForCancelShutdown(roundTripper *mhttp.MockRoundTripper, rootURL, use
 		request, _ = http.NewRequest(http.MethodPost, fmt.Sprintf("%s/quietDown", rootURL), nil)
 	}
 	PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
-	return
 }
 
 // PrepareForGetIdentity only for test

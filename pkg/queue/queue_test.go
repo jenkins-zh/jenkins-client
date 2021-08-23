@@ -12,13 +12,13 @@ var _ = Describe("queue test", func() {
 	var (
 		ctrl         *gomock.Controller
 		roundTripper *mhttp.MockRoundTripper
-		queueClient  QueueClient
+		queueClient  Client
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
-		queueClient = QueueClient{}
+		queueClient = Client{}
 		queueClient.RoundTripper = roundTripper
 		queueClient.URL = "http://localhost"
 	})

@@ -6,19 +6,19 @@ import (
 	"net/http"
 )
 
-// QueueClient is the client of queue
-type QueueClient struct {
+// Client is the client of queue
+type Client struct {
 	core.JenkinsCore
 }
 
 // Get returns the job queue
-func (q *QueueClient) Get() (status *JobQueue, err error) {
+func (q *Client) Get() (status *JobQueue, err error) {
 	err = q.RequestWithData(http.MethodGet, "/queue/api/json", nil, nil, 200, &status)
 	return
 }
 
 // Cancel will cancel a job from the queue
-func (q *QueueClient) Cancel(id int) (err error) {
+func (q *Client) Cancel(id int) (err error) {
 	api := fmt.Sprintf("/queue/cancelItem?id=%d", id)
 	var statusCode int
 	if statusCode, err = q.RequestWithoutData(http.MethodPost, api, nil, nil, 302); err != nil &&
@@ -31,11 +31,11 @@ func (q *QueueClient) Cancel(id int) (err error) {
 
 // JobQueue represent the job queue
 type JobQueue struct {
-	Items []QueueItem
+	Items []Item
 }
 
-// QueueItem is the item of job queue
-type QueueItem struct {
+// Item is the item of job queue
+type Item struct {
 	Blocked                    bool
 	Buildable                  bool
 	ID                         int

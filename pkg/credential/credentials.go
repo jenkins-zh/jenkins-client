@@ -18,7 +18,7 @@ type CredentialsManager struct {
 }
 
 // GetList returns the credential list
-func (c *CredentialsManager) GetList(store string) (credentialList CredentialList, err error) {
+func (c *CredentialsManager) GetList(store string) (credentialList List, err error) {
 	api := fmt.Sprintf("/credentials/store/%s/domain/_/api/json?pretty=true&depth=1", store)
 	err = c.RequestWithData(http.MethodGet, api, nil, nil, 200, &credentialList)
 	return
@@ -91,8 +91,8 @@ type StringCredentials struct {
 	Secret     string `json:"secret"`
 }
 
-// CredentialList contains many credentials
-type CredentialList struct {
+// List contains many credentials
+type List struct {
 	Description     string
 	DisplayName     string
 	FullDisplayName string

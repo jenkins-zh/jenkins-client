@@ -5,13 +5,13 @@ import (
 	"net/http"
 )
 
-// CASCManager is the client of configuration as code
-type CASCManager struct {
+// Manager is the client of configuration as code
+type Manager struct {
 	core.JenkinsCore
 }
 
 // Export exports the config of configuration-as-code
-func (c *CASCManager) Export() (config string, err error) {
+func (c *Manager) Export() (config string, err error) {
 	var (
 		data       []byte
 		statusCode int
@@ -27,7 +27,7 @@ func (c *CASCManager) Export() (config string, err error) {
 }
 
 // Schema get the schema of configuration-as-code
-func (c *CASCManager) Schema() (schema string, err error) {
+func (c *Manager) Schema() (schema string, err error) {
 	var (
 		data       []byte
 		statusCode int
@@ -42,15 +42,15 @@ func (c *CASCManager) Schema() (schema string, err error) {
 	return
 }
 
-// Reload reload the config of configuration-as-code
-func (c *CASCManager) Reload() (err error) {
+// Reload reloads the config of configuration-as-code
+func (c *Manager) Reload() (err error) {
 	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/reload",
 		nil, nil, 200)
 	return
 }
 
 // Apply apply the config of configuration-as-code
-func (c *CASCManager) Apply() (err error) {
+func (c *Manager) Apply() (err error) {
 	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/apply",
 		nil, nil, 200)
 	return

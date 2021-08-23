@@ -25,5 +25,4 @@ func PrepareGetStatus(roundTripper *mhttp.MockRoundTripper, rootURL, user, passw
 	if user != "" && password != "" {
 		request.SetBasicAuth(user, password)
 	}
-	return
 }

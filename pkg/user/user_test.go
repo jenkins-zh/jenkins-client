@@ -11,7 +11,7 @@ var _ = Describe("user test", func() {
 	var (
 		ctrl         *gomock.Controller
 		roundTripper *mhttp.MockRoundTripper
-		userClient   UserClient
+		userClient   Client
 
 		username string
 		password string
@@ -20,7 +20,7 @@ var _ = Describe("user test", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
-		userClient = UserClient{}
+		userClient = Client{}
 		userClient.RoundTripper = roundTripper
 		userClient.URL = "http://localhost"
 

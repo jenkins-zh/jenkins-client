@@ -18,13 +18,13 @@ import (
 var _ = Describe("job test", func() {
 	var (
 		ctrl         *gomock.Controller
-		jobClient    JobClient
+		jobClient    Client
 		roundTripper *mhttp.MockRoundTripper
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		jobClient = JobClient{}
+		jobClient = Client{}
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
 		jobClient.RoundTripper = roundTripper
 		jobClient.URL = "http://localhost"

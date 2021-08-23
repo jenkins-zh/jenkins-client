@@ -267,5 +267,4 @@ func PrepareForCreatePipelineJob(roundTripper *mhttp.MockRoundTripper, rootURL, 
 	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/view/all/createItem", rootURL), payload)
 	request.Header.Add(httpdownloader.ContentType, httpdownloader.ApplicationForm)
 	core.PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
-	return
 }

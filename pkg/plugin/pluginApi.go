@@ -17,8 +17,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// PluginAPI represents a plugin API
-type PluginAPI struct {
+// API represents a plugin API
+type API struct {
 	dependencyMap map[string]string
 
 	SkipDependency bool
@@ -31,8 +31,8 @@ type PluginAPI struct {
 	RoundTripper http.RoundTripper
 }
 
-// PluginDependency represents a plugin dependency
-type PluginDependency struct {
+// Dependency represents a plugin dependency
+type Dependency struct {
 	Name      string `json:"name"`
 	Implied   bool   `json:"implied"`
 	Optional  bool   `json:"optional"`
@@ -41,37 +41,37 @@ type PluginDependency struct {
 	ShortName string `json:"shortName"`
 }
 
-// PluginInfo hold the info of a plugin
-type PluginInfo struct {
-	BuildDate         string             `json:"buildDate"`
-	Dependencies      []PluginDependency `json:"dependencies"`
-	Excerpt           string             `json:"excerpt"`
-	FirstRelease      string             `json:"firstRelease"`
-	Gav               string             `json:"gav"`
-	Name              string             `json:"name"`
-	PreviousTimestamp string             `json:"previousTimestamp"`
-	PreviousVersion   string             `json:"previousVersion"`
-	ReleaseTimestamp  string             `json:"releaseTimestamp"`
-	RequireCore       string             `json:"RequireCore"`
-	Title             string             `json:"title"`
-	URL               string             `json:"url"`
-	Version           string             `json:"version"`
-	SecurityWarnings  []SecurityWarning  `json:"securityWarnings"`
-	Stats             PluginInfoStats
+// Info hold the info of a plugin
+type Info struct {
+	BuildDate         string            `json:"buildDate"`
+	Dependencies      []Dependency      `json:"dependencies"`
+	Excerpt           string            `json:"excerpt"`
+	FirstRelease      string            `json:"firstRelease"`
+	Gav               string            `json:"gav"`
+	Name              string            `json:"name"`
+	PreviousTimestamp string            `json:"previousTimestamp"`
+	PreviousVersion   string            `json:"previousVersion"`
+	ReleaseTimestamp  string            `json:"releaseTimestamp"`
+	RequireCore       string            `json:"RequireCore"`
+	Title             string            `json:"title"`
+	URL               string            `json:"url"`
+	Version           string            `json:"version"`
+	SecurityWarnings  []SecurityWarning `json:"securityWarnings"`
+	Stats             InfoStats
 }
 
-// PluginInfoStats is the plugin info stats
-type PluginInfoStats struct {
+// InfoStats is the plugin info stats
+type InfoStats struct {
 	CurrentInstalls                   int
-	Installations                     []PluginInstallationInfo
-	InstallationsPerVersion           []PluginInstallationInfo
-	InstallationsPercentage           []PluginInstallationInfo
-	InstallationsPercentagePerVersion []PluginInstallationInfo
+	Installations                     []InstallationInfo
+	InstallationsPerVersion           []InstallationInfo
+	InstallationsPercentage           []InstallationInfo
+	InstallationsPercentagePerVersion []InstallationInfo
 	Trend                             int
 }
 
-// PluginInstallationInfo represents the plugin installation info
-type PluginInstallationInfo struct {
+// InstallationInfo represents the plugin installation info
+type InstallationInfo struct {
 	Timestamp  int64
 	Total      int
 	Version    string
@@ -89,22 +89,24 @@ type SecurityWarning struct {
 
 // Version represents the SecurityWarning cover version
 type Version struct {
+	// nolint
 	firstVersion string
-	lastVersion  string
+	// nolint
+	lastVersion string
 }
 
 // Plugins represents multi PluginInfo
 type Plugins struct {
-	Limit   int          `json:"limit"`
-	Page    int          `json:"page"`
-	Pages   int          `json:"pages"`
-	Total   int          `json:"total"`
-	Plugins []PluginInfo `json:"plugins"`
+	Limit   int    `json:"limit"`
+	Page    int    `json:"page"`
+	Pages   int    `json:"pages"`
+	Total   int    `json:"total"`
+	Plugins []Info `json:"plugins"`
 }
 
 // ShowTrend show the trend of plugins
-func (d *PluginAPI) ShowTrend(name string) (trend string, err error) {
-	var plugin *PluginInfo
+func (d *API) ShowTrend(name string) (trend string, err error) {
+	var plugin *Info
 	if plugin, err = d.GetPlugin(name); err != nil {
 		return
 	}
@@ -123,17 +125,17 @@ func (d *PluginAPI) ShowTrend(name string) (trend string, err error) {
 }
 
 // DownloadPlugins will download those plugins from update center
-func (d *PluginAPI) DownloadPlugins(names []string) (err error) {
+func (d *API) DownloadPlugins(names []string) (err error) {
 	d.dependencyMap = make(map[string]string)
 	core.Logger.Info("start to collect plugin dependencies...")
-	plugins := make([]PluginInfo, 0)
+	plugins := make([]Info, 0)
 	for _, name := range names {
 		core.Logger.Debug("start to collect dependency", zap.String("plugin", name))
 
 		if !strings.Contains(name, "@") {
 			plugins = append(plugins, d.collectDependencies(strings.ToLower(name))...)
 		} else {
-			jclient := &PluginManager{
+			jclient := &Manager{
 				JenkinsCore: core.JenkinsCore{
 					RoundTripper: d.RoundTripper,
 				},
@@ -163,7 +165,7 @@ func (d *PluginAPI) DownloadPlugins(names []string) (err error) {
 	return
 }
 
-func (d *PluginAPI) getMirrorURL(url string) (mirror string) {
+func (d *API) getMirrorURL(url string) (mirror string) {
 	mirror = url
 	if d.UseMirror && d.MirrorURL != "" {
 		core.Logger.Debug("replace with mirror", zap.String("original", url))
@@ -172,7 +174,7 @@ func (d *PluginAPI) getMirrorURL(url string) (mirror string) {
 	return
 }
 
-func (d *PluginAPI) download(url string, name string) (err error) {
+func (d *API) download(url string, name string) (err error) {
 	url = d.getMirrorURL(url)
 	core.Logger.Info("prepare to download", zap.String("name", name), zap.String("url", url))
 
@@ -187,7 +189,7 @@ func (d *PluginAPI) download(url string, name string) (err error) {
 }
 
 // GetPlugin will get the plugin information
-func (d *PluginAPI) GetPlugin(name string) (plugin *PluginInfo, err error) {
+func (d *API) GetPlugin(name string) (plugin *Info, err error) {
 	var cli = http.Client{}
 	if d.RoundTripper == nil {
 		cli.Transport = &http.Transport{
@@ -206,21 +208,21 @@ func (d *PluginAPI) GetPlugin(name string) (plugin *PluginInfo, err error) {
 	if resp, err = cli.Get(pluginAPI); err == nil {
 		var body []byte
 		if body, err = ioutil.ReadAll(resp.Body); err == nil {
-			plugin = &PluginInfo{}
+			plugin = &Info{}
 			err = json.Unmarshal(body, plugin)
 		}
 	}
 	return
 }
 
-func (d *PluginAPI) collectDependencies(pluginName string) (plugins []PluginInfo) {
+func (d *API) collectDependencies(pluginName string) (plugins []Info) {
 	plugin, err := d.GetPlugin(pluginName)
 	if err != nil {
 		log.Println("can't get the plugin by name:", pluginName)
 		panic(err)
 	}
 
-	plugins = make([]PluginInfo, 0)
+	plugins = make([]Info, 0)
 	plugins = append(plugins, *plugin)
 	if d.SkipDependency {
 		return
@@ -240,7 +242,7 @@ func (d *PluginAPI) collectDependencies(pluginName string) (plugins []PluginInfo
 }
 
 // BatchSearchPlugins will batch search plugins
-func (d *PluginAPI) BatchSearchPlugins(pluginNames string) (plugins []PluginInfo, err error) {
+func (d *API) BatchSearchPlugins(pluginNames string) (plugins []Info, err error) {
 	var cli = http.Client{}
 	if d.RoundTripper == nil {
 		cli.Transport = &http.Transport{

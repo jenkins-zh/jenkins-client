@@ -63,7 +63,6 @@ func PrepareForEditUserDesc(roundTripper *mhttp.MockRoundTripper, rootURL, userN
 	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/user/%s/submitDescription", rootURL, userName), payload)
 	request.Header.Add(httpdownloader.ContentType, httpdownloader.ApplicationForm)
 	core.PrepareCommonPost(request, "", roundTripper, user, passwd, rootURL)
-	return
 }
 
 // PrepareForDeleteUser only for test

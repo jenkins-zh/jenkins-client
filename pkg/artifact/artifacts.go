@@ -16,13 +16,13 @@ type Artifact struct {
 	Size int64
 }
 
-// ArtifactClient is client for getting the artifacts
-type ArtifactClient struct {
+// Client is client for getting the artifacts
+type Client struct {
 	core.JenkinsCore
 }
 
 // List get the list of artifacts from a build
-func (q *ArtifactClient) List(jobName string, buildID int) (artifacts []Artifact, err error) {
+func (q *Client) List(jobName string, buildID int) (artifacts []Artifact, err error) {
 	path := job.ParseJobPath(jobName)
 	var api string
 	if buildID < 1 {

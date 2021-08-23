@@ -3,6 +3,7 @@
 ## 如何安装
 
 go.mod
+
 ```
 require github.com/jenkins-zh/jenkins-client
 ```
@@ -10,6 +11,7 @@ require github.com/jenkins-zh/jenkins-client
 ## 配置
 
 jcli配置详情
+
 ```
 - name: dev
   url: http://192.168.1.10
@@ -18,7 +20,9 @@ jcli配置详情
   proxy: http://192.168.10.10:47586
   proxyAuth: username:password
 ```
+
 所以当你想使用jcli-client，你需要配置一下jenkins.yml，并解析
+
 ```
 type Config struct {
 	URL      string `yaml:"url"`
@@ -56,7 +60,9 @@ func GetJenkinsCore() (core client.JenkinsCore, e error) {
 ```
 
 ## Job API
+
 常用API
+
 ```
 // GetBuild get build information of a job
 func (q *JobClient) GetBuild(jobName string, id int) (job *JobBuild, err error){...}
@@ -75,7 +81,9 @@ func (q *JobClient) Log(jobName string, history int, start int64) (jobLog JobLog
 ```
 
 ## User API
+
 常用API
+
 ```
 // Create will create a user in Jenkins
 func (q *UserClient) Create(username, password string) (user *UserForCreate, err error) {...}
@@ -85,6 +93,7 @@ func (q *UserClient) Delete(username string) (err error) {...}
 ```
 
 ## 调用案例
+
 ```
 type JobBuildOptions struct {
 	Env       string 

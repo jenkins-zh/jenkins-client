@@ -11,7 +11,7 @@ import (
 var _ = Describe("computer test", func() {
 	var (
 		ctrl           *gomock.Controller
-		computerClient computer.ComputerClient
+		computerClient computer.Client
 		roundTripper   *mhttp.MockRoundTripper
 		name           string
 	)
@@ -20,7 +20,7 @@ var _ = Describe("computer test", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
 
-		computerClient = computer.ComputerClient{}
+		computerClient = computer.Client{}
 		computerClient.RoundTripper = roundTripper
 		computerClient.URL = "http://localhost"
 		name = "fake-name"

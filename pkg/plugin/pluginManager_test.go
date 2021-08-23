@@ -18,14 +18,14 @@ var _ = Describe("PluginManager test", func() {
 	var (
 		ctrl         *gomock.Controller
 		roundTripper *mhttp.MockRoundTripper
-		pluginMgr    PluginManager
+		pluginMgr    Manager
 		updateMgr    UpdateCenterManager
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
-		pluginMgr = PluginManager{}
+		pluginMgr = Manager{}
 		pluginMgr.RoundTripper = roundTripper
 		pluginMgr.URL = "http://localhost"
 		updateMgr = UpdateCenterManager{}

@@ -13,27 +13,27 @@ import (
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 )
 
-// ComputerClient is client for operate computers
-type ComputerClient struct {
+// Client is client for operate computers
+type Client struct {
 	core.JenkinsCore
 }
 
 // List get the computer list
-func (c *ComputerClient) List() (computers ComputerList, err error) {
+func (c *Client) List() (computers List, err error) {
 	err = c.RequestWithData(http.MethodGet, "/computer/api/json",
 		nil, nil, 200, &computers)
 	return
 }
 
 // Launch starts up a agent
-func (c *ComputerClient) Launch(name string) (err error) {
+func (c *Client) Launch(name string) (err error) {
 	api := fmt.Sprintf("/computer/%s/launchSlaveAgent", name)
 	_, err = c.RequestWithoutData(http.MethodPost, api, nil, nil, 200)
 	return
 }
 
 // Delete removes a agent from Jenkins
-func (c *ComputerClient) Delete(name string) (err error) {
+func (c *Client) Delete(name string) (err error) {
 	api := fmt.Sprintf("/computer/%s/doDelete", name)
 	_, err = c.RequestWithoutData(http.MethodPost, api, nil, nil, 200)
 	return
@@ -45,7 +45,7 @@ type agentJNLP struct {
 }
 
 // GetSecret returns the secret of an agent
-func (c *ComputerClient) GetSecret(name string) (secret string, err error) {
+func (c *Client) GetSecret(name string) (secret string, err error) {
 	api := fmt.Sprintf("/computer/%s/slave-agent.jnlp", name)
 	var response *http.Response
 	if response, err = c.RequestWithResponse(http.MethodGet, api, nil, nil); err == nil {
@@ -67,7 +67,7 @@ func (c *ComputerClient) GetSecret(name string) (secret string, err error) {
 }
 
 // GetLog fetch the log a computer
-func (c *ComputerClient) GetLog(name string) (log string, err error) {
+func (c *Client) GetLog(name string) (log string, err error) {
 	var response *http.Response
 	api := fmt.Sprintf("/computer/%s/logText/progressiveText", name)
 	if response, err = c.RequestWithResponse(http.MethodGet, api, nil, nil); err == nil {
@@ -86,7 +86,7 @@ func (c *ComputerClient) GetLog(name string) (log string, err error) {
 }
 
 // Create creates a computer by name
-func (c *ComputerClient) Create(name string) (err error) {
+func (c *Client) Create(name string) (err error) {
 	formData := url.Values{
 		"name": {name},
 		"mode": {"hudson.slaves.DumbSlave"},
@@ -143,7 +143,7 @@ func GetPayloadForCreateAgent(name string) *strings.Reader {
 
 // Computer is the agent of Jenkins
 type Computer struct {
-	AssignedLabels      []ComputerLabel
+	AssignedLabels      []Label
 	Description         string
 	DisplayName         string
 	Idle                bool
@@ -163,14 +163,15 @@ type OfflineCause struct {
 	Description string
 }
 
-// ComputerList represents the list of computer from API
-type ComputerList struct {
+// List represents the list of computer from API
+type List struct {
+	// nolint
 	busyExecutors  int
 	Computer       []Computer
 	TotalExecutors int
 }
 
-// ComputerLabel represents the label of a computer
-type ComputerLabel struct {
+// Label represents the label of a computer
+type Label struct {
 	Name string
 }

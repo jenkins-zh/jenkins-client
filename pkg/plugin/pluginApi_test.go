@@ -13,13 +13,13 @@ var _ = Describe("plugin api test", func() {
 	var (
 		ctrl         *gomock.Controller
 		roundTripper *mhttp.MockRoundTripper
-		pluginAPI    PluginAPI
+		pluginAPI    API
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
-		pluginAPI = PluginAPI{
+		pluginAPI = API{
 			RoundTripper: roundTripper,
 			ShowProgress: false,
 			UseMirror:    false,
@@ -53,7 +53,8 @@ var _ = Describe("plugin api test", func() {
 		})
 
 		It("empty name list", func() {
-			pluginAPI.DownloadPlugins(names)
+			// ignore error
+			_ = pluginAPI.DownloadPlugins(names)
 		})
 
 		It("one plugin name", func() {
@@ -61,10 +62,14 @@ var _ = Describe("plugin api test", func() {
 
 			PrepareOnePluginInfo(roundTripper, "fake")
 			PrepareDownloadPlugin(roundTripper)
-			pluginAPI.DownloadPlugins(names)
+			// ignore error
+			_ = pluginAPI.DownloadPlugins(names)
 
 			_, err := os.Stat("fake.hpi")
-			defer os.Remove("fake.hpi")
+			defer func() {
+				// ignore this error
+				_ = os.Remove("fake.hpi")
+			}()
 			Expect(err).To(BeNil())
 		})
 
@@ -75,10 +80,14 @@ var _ = Describe("plugin api test", func() {
 
 			PrepareOnePluginInfo(roundTripper, "fake")
 			PrepareDownloadPlugin(roundTripper)
-			pluginAPI.DownloadPlugins(names)
+			// ignore error
+			_ = pluginAPI.DownloadPlugins(names)
 
 			_, err := os.Stat("fake.hpi")
-			defer os.Remove("fake.hpi")
+			defer func() {
+				// ignore error
+				_ = os.Remove("fake.hpi")
+			}()
 			Expect(err).To(BeNil())
 		})
 
@@ -89,7 +98,8 @@ var _ = Describe("plugin api test", func() {
 			PrepareDownloadPlugin(roundTripper)
 			PrepareDownloadPlugin(roundTripper)
 			pluginAPI.SkipDependency = false
-			pluginAPI.DownloadPlugins(names)
+			// ignore error
+			_ = pluginAPI.DownloadPlugins(names)
 
 			var err error
 			_, err = os.Stat("fake.hpi")
@@ -97,8 +107,14 @@ var _ = Describe("plugin api test", func() {
 			_, err = os.Stat("fake-1.hpi")
 			Expect(err).To(BeNil())
 
-			defer os.Remove("fake.hpi")
-			defer os.Remove("fake-1.hpi")
+			defer func() {
+				// ignore error
+				_ = os.Remove("fake.hpi")
+			}()
+			defer func() {
+				// ignore error
+				_ = os.Remove("fake-1.hpi")
+			}()
 		})
 
 		It("with dependency which is optional", func() {
@@ -108,13 +124,16 @@ var _ = Describe("plugin api test", func() {
 			PrepareDownloadPlugin(roundTripper)
 			pluginAPI.SkipDependency = false
 			pluginAPI.SkipOptional = true
-			pluginAPI.DownloadPlugins(names)
+			_ = pluginAPI.DownloadPlugins(names)
 
 			var err error
 			_, err = os.Stat("fake.hpi")
 			Expect(err).To(BeNil())
 
-			defer os.Remove("fake.hpi")
+			defer func() {
+				// ignore error
+				_ = os.Remove("fake.hpi")
+			}()
 		})
 
 		It("skip dependency", func() {
@@ -124,13 +143,16 @@ var _ = Describe("plugin api test", func() {
 			PrepareDownloadPlugin(roundTripper)
 			pluginAPI.SkipDependency = true
 			pluginAPI.SkipOptional = true
-			pluginAPI.DownloadPlugins(names)
+			_ = pluginAPI.DownloadPlugins(names)
 
 			var err error
 			_, err = os.Stat("fake.hpi")
 			Expect(err).To(BeNil())
 
-			defer os.Remove("fake.hpi")
+			defer func() {
+				// ignore error
+				_ = os.Remove("fake.hpi")
+			}()
 		})
 
 		It("batch search plugins", func() {

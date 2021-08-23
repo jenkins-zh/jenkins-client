@@ -11,7 +11,7 @@ var _ = Describe("artifacts test", func() {
 	var (
 		ctrl           *gomock.Controller
 		roundTripper   *mhttp.MockRoundTripper
-		artifactClient ArtifactClient
+		artifactClient Client
 
 		username string
 		password string
@@ -20,7 +20,7 @@ var _ = Describe("artifacts test", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
-		artifactClient = ArtifactClient{}
+		artifactClient = Client{}
 		artifactClient.RoundTripper = roundTripper
 		artifactClient.URL = "http://localhost"
 

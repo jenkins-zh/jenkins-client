@@ -11,7 +11,7 @@ var _ = Describe("core test", func() {
 	var (
 		ctrl         *gomock.Controller
 		roundTripper *mhttp.MockRoundTripper
-		coreClient   CoreClient
+		coreClient   Client
 
 		username string
 		password string
@@ -20,7 +20,7 @@ var _ = Describe("core test", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
-		coreClient = CoreClient{}
+		coreClient = Client{}
 		coreClient.RoundTripper = roundTripper
 		coreClient.URL = "http://localhost"
 
