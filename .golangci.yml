@@ -1,0 +1,15 @@
+# golangci-lint configuration from https://golangci-lint.run/usage/configuration/
+# options for analysis running
+run:
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  timeout: 5m
+
+  skip-dirs:
+    - .git
+    - .github
+    - bin
+    - docs
+
+linters:
+  enable:
+    - revive # replacement for golint

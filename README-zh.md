@@ -1,6 +1,6 @@
-# jenkins-client Document
+# jcli-client 文档
 
-## How to get it
+## 如何安装
 
 go.mod
 
@@ -8,9 +8,9 @@ go.mod
 require github.com/jenkins-zh/jenkins-client
 ```
 
-## Configuration
+## 配置
 
-Examples of jcli configuration
+jcli配置详情
 
 ```
 - name: dev
@@ -21,7 +21,7 @@ Examples of jcli configuration
   proxyAuth: username:password
 ```
 
-So when you use jcli-client, you need to configure and read configuration files like this
+所以当你想使用jcli-client，你需要配置一下jenkins.yml，并解析
 
 ```
 type Config struct {
@@ -31,19 +31,19 @@ type Config struct {
 }
 
 func GetJenkinsCore() (core client.JenkinsCore, e error) {
-	// read configuration files
+	// 读取配置文件
 	jenkinsConfigPath := "./jenkins.yml"
 	yamlFile, e := ioutil.ReadFile(jenkinsConfigPath)
 	if e != nil {
 		return
 	}
-	// yaml parse
+	// yaml解析
 	var config Config
 	e = yaml.Unmarshal(yamlFile, &config)
 	if e != nil {
 		return
 	}
-	// capsulate JenkinsCore
+	// 封装JenkinsCore
 	core = client.JenkinsCore{
 		URL:      config.URL,
 		UserName: config.UserName,
@@ -61,7 +61,7 @@ func GetJenkinsCore() (core client.JenkinsCore, e error) {
 
 ## Job API
 
-More used API
+常用API
 
 ```
 // GetBuild get build information of a job
@@ -82,7 +82,7 @@ func (q *JobClient) Log(jobName string, history int, start int64) (jobLog JobLog
 
 ## User API
 
-More used API
+常用API
 
 ```
 // Create will create a user in Jenkins
@@ -92,7 +92,7 @@ func (q *UserClient) Create(username, password string) (user *UserForCreate, err
 func (q *UserClient) Delete(username string) (err error) {...}
 ```
 
-## Examples
+## 调用案例
 
 ```
 type JobBuildOptions struct {
@@ -109,21 +109,21 @@ func BuildJob(jobBuild JobBuildOptions) (e error) {
 		return
 	}
 	param1 := client.ParameterDefinition{
-		Description:           "pre and prd please use tag",
+		Description:           "pre 和 prd 环境使用 tag 发布",
 		Name:                  "BRANCH_TAG",
 		Type:                  "Branch or Tag",
 		Value:                 jobBuild.BranchTag,
 		DefaultParameterValue: client.DefaultParameterValue{Value: "origin/master"},
 	}
 	param2 := client.ParameterDefinition{
-		Description:           "choice",
+		Description:           "环境选择",
 		Name:                  "ENV",
 		Type:                  "Choice Parameter",
 		Value:                 jobBuild.Env,
 		DefaultParameterValue: client.DefaultParameterValue{Value: "qa"},
 	}
 	param3 := client.ParameterDefinition{
-		Description:           "Deploy Type",
+		Description:           "部署Type",
 		Name:                  "DEPLOY_TYPE",
 		Type:                  "Choice Parameter",
 		Value:                 "publish",
@@ -135,9 +135,9 @@ func BuildJob(jobBuild JobBuildOptions) (e error) {
 }
 ```
 
-## Plugin Dependencies
+## 插件依赖
 
-Pay attention to the part of the Jenkins CLI, they need some special plugins. Please read through the following table：
+本 Jenkins 客户端的部分 API 需要依赖特定的插件，请参考下面的列表：
 
 | API | Plugin |
 |---|---|
