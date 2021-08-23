@@ -68,6 +68,22 @@ func PrepareForComputerAgentSecretRequest(roundTripper *mhttp.MockRoundTripper, 
 	core.PrepareCommonPost(request, secret, roundTripper, user, password, rootURL)
 }
 
+// PrepareForComputerAgent only for test
+func PrepareForComputerAgent(roundTripper *mhttp.MockRoundTripper, rootURL, user, password, name, secret string) {
+	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/computer/%s/slave-agent.jnlp", rootURL, name), nil)
+	response := &http.Response{
+		StatusCode: 200,
+		Request:    request,
+		Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`<jnlp>
+<application-desc>
+<argument>%s</argument>
+</application-desc>
+</jnlp>`, secret))),
+	}
+	roundTripper.EXPECT().
+		RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
+}
+
 // PrepareForComputerCreateRequest only for test
 func PrepareForComputerCreateRequest(roundTripper *mhttp.MockRoundTripper, rootURL, user, password, name string) {
 	formData := url.Values{

@@ -70,7 +70,7 @@ var _ = Describe("computer test", func() {
 
 	It("GetSecret of an agent", func() {
 		secret := "fake-secret"
-		computer.PrepareForComputerAgentSecretRequest(roundTripper,
+		computer.PrepareForComputerAgent(roundTripper,
 			computerClient.URL, "", "", name, secret)
 
 		result, err := computerClient.GetSecret(name)

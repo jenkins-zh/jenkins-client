@@ -164,7 +164,7 @@ var _ = Describe("job test", func() {
 			Expect(err).To(BeNil())
 		})
 
-		FIt("with params", func() {
+		It("with params", func() {
 			jobName := "fake"
 
 			PrepareForBuildWithParams(roundTripper, jobClient.URL, jobName, "", "")
