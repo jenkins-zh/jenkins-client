@@ -1,6 +1,7 @@
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/jenkins-zh/jenkins-client)
 [![](https://goreportcard.com/badge/jenkins-zh/jenkins-client)](https://goreportcard.com/report/jenkins-zh/jenkins-client)
 [![codecov](https://codecov.io/gh/jenkins-zh/jenkins-client/branch/main/graph/badge.svg?token=8N1vvFPxPm)](https://codecov.io/gh/jenkins-zh/jenkins-client)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/2b413ddf89d64212b8ddf3db23cb3c47)](https://www.codacy.com/gh/jenkins-zh/jenkins-client/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jenkins-zh/jenkins-client&amp;utm_campaign=Badge_Grade)
 [![Contributors](https://img.shields.io/github/contributors/jenkins-zh/jenkins-client.svg)](https://github.com/jenkins-zh/jenkins-client/graphs/contributors)
 
 # jenkins-client Document
