@@ -14,10 +14,7 @@ type Time struct {
 
 // IsZero returns the  true if the value is nil or time is zero.
 func (t *Time) IsZero() bool {
-	if t == nil {
-		return true
-	}
-	return t.Time.IsZero()
+	return t == nil || t.Time.IsZero()
 }
 
 // UnmarshalJSON implements the json Unmarshaler interface.

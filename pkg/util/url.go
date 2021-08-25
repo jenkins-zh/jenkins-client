@@ -10,7 +10,7 @@ import (
 func URLJoin(host, api string) (targetURL *url.URL, err error) {
 	if targetURL, err = url.Parse(host); err == nil {
 		pathURL, _ := url.Parse(path.Join(targetURL.Path, api))
-		// handle api like "path/" correctly
+		// handle API like "path/" correctly
 		if strings.HasSuffix(api, "/") {
 			pathURL.Path = pathURL.Path + "/"
 		}

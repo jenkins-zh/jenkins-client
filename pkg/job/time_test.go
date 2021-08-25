@@ -30,7 +30,13 @@ func TestTime_UnmarshalJSON(t1 *testing.T) {
 	}, {
 		name: "invalid Jenkins time",
 		args: args{
-			data: []byte(`2021-08-23`),
+			data: []byte(`"2021-08-23"`),
+		},
+		wantErr: true,
+	}, {
+		name: "invalid JSON",
+		args: args{
+			data: []byte(`invalid`),
 		},
 		wantErr: true,
 	},
