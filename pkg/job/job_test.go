@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"io/ioutil"
 	"net/http"
+	"testing"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 
@@ -476,3 +477,52 @@ var _ = Describe("test function ParseJobPath", func() {
 		})
 	})
 })
+
+func TestParsePipelinePath(t *testing.T) {
+	type args struct {
+		pipelines []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{{
+		name: "nil pipelines",
+		args: args{
+			pipelines: nil,
+		},
+		want: "",
+	}, {
+		name: "single pipeline",
+		args: args{
+			pipelines: []string{"a"},
+		},
+		want: "pipelines/a",
+	}, {
+		name: "two pipelines",
+		args: args{
+			pipelines: []string{"a", "b"},
+		},
+		want: "pipelines/a/pipelines/b",
+	}, {
+		name: "two more pipelines",
+		args: args{
+			pipelines: []string{"a", "b", "c"},
+		},
+		want: "pipelines/a/pipelines/b/pipelines/c",
+	}, {
+		name: "pipelines contain empty pipeline",
+		args: args{
+			pipelines: []string{"a", "", "c"},
+		},
+		want: "pipelines/a/pipelines//pipelines/c",
+	},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ParsePipelinePath(tt.args.pipelines...); got != tt.want {
+				t.Errorf("ParsePipelinePath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
+	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -14,8 +15,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 
 	"go.uber.org/zap"
 	"moul.io/http2curl"
@@ -44,12 +43,11 @@ func (q *Client) Search(name, kind string, start, limit int) (items []JenkinsIte
 }
 
 // SearchViaBlue searches jobs via the BlueOcean API
+//
+// Deprecated: For clearer client of BlueOcean, please use BlueOceanClient#Search instead
 func (q *Client) SearchViaBlue(name string, start, limit int) (items []JenkinsItem, err error) {
-	api := fmt.Sprintf("/blue/rest/search/?q=pipeline:*%s*;type:pipeline;organization:jenkins;excludedFromFlattening=jenkins.branch.MultiBranchProject,com.cloudbees.hudson.plugins.folder.AbstractFolder&filter=no-folders&start=%d&limit=%d",
-		name, start, limit)
-	err = q.RequestWithData(http.MethodGet, api,
-		nil, nil, 200, &items)
-	return
+	boClient := BlueOceanClient{JenkinsCore: q.JenkinsCore, organization: "jenkins"}
+	return boClient.Search(name, start, limit)
 }
 
 // Build trigger a job
@@ -464,6 +462,14 @@ func ParseJobPath(jobName string) (path string) {
 		path = fmt.Sprintf("%s/job/%s", path, item)
 	}
 	return
+}
+
+// ParsePipelinePath parses multiple pipelines and leads with slash.
+func ParsePipelinePath(pipelines ...string) string {
+	if len(pipelines) == 0 {
+		return ""
+	}
+	return "pipelines/" + strings.Join(pipelines, "/pipelines/")
 }
 
 // Log holds the log text
