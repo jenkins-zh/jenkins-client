@@ -9,13 +9,13 @@ import (
 // BlueOceanClient is client for operating pipelines via BlueOcean RESTful API.
 type BlueOceanClient struct {
 	core.JenkinsCore
-	organization string
+	Organization string
 }
 
 // Search searches jobs via the BlueOcean API
 func (boClient *BlueOceanClient) Search(name string, start, limit int) (items []JenkinsItem, err error) {
 	api := fmt.Sprintf("/blue/rest/search/?q=pipeline:*%s*;type:pipeline;organization:%s;excludedFromFlattening=jenkins.branch.MultiBranchProject,com.cloudbees.hudson.plugins.folder.AbstractFolder&filter=no-folders&start=%d&limit=%d",
-		name, boClient.organization, start, limit)
+		name, boClient.Organization, start, limit)
 	err = boClient.RequestWithData(http.MethodGet, api,
 		nil, nil, 200, &items)
 	return

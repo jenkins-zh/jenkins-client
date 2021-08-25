@@ -29,7 +29,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
 		boClient.RoundTripper = roundTripper
 		boClient.URL = "http://localhost"
-		boClient.organization = organization
+		boClient.Organization = organization
 	})
 
 	AfterEach(func() {
