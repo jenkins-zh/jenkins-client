@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
+	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -14,8 +15,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 
 	"go.uber.org/zap"
 	"moul.io/http2curl"
@@ -89,6 +88,34 @@ func (q *Client) BuildAndReturn(jobName, cause string, timeout, delay int) (buil
 
 	err = q.RequestWithData(http.MethodPost, api, nil, nil, 200, &build)
 	return
+}
+
+// BuildViaBlueAPI builds a PipelineRun for specific organization and pipelines.
+func (q *Client) BuildViaBlueAPI(organization string, pipelines ...string) (*PipelineBuild, error) {
+	api := fmt.Sprintf("/blue/rest/organizations/%s/%s/runs/", organization, ParsePipelinePath(pipelines...))
+	var pb PipelineBuild
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+	err := q.RequestWithData(http.MethodPost, api, headers, nil, 200, &pb)
+	if err != nil {
+		return nil, err
+	}
+	return &pb, nil
+}
+
+// GetBuildViaBlueAPI gets PipelineRun result for specific organization, run ID and pipelines.
+func (q *Client) GetBuildViaBlueAPI(organization string, runID string, pipelines ...string) (*PipelineBuild, error) {
+	api := fmt.Sprintf("/blue/rest/organizations/%s/%s/runs/%s/", organization, ParsePipelinePath(pipelines...), runID)
+	var pb PipelineBuild
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+	err := q.RequestWithData(http.MethodGet, api, headers, nil, 200, &pb)
+	if err != nil {
+		return nil, err
+	}
+	return &pb, nil
 }
 
 // GetBuild get build information of a job
@@ -466,6 +493,14 @@ func ParseJobPath(jobName string) (path string) {
 	return
 }
 
+// ParsePipelinePath parses multiple pipelines and leads with slash.
+func ParsePipelinePath(pipelines ...string) string {
+	if len(pipelines) == 0 {
+		return ""
+	}
+	return "pipelines/" + strings.Join(pipelines, "/pipelines/")
+}
+
 // Log holds the log text
 type Log struct {
 	HasMore   bool
@@ -588,4 +623,65 @@ type InputItem struct {
 	ProceedURL          string
 	RedirectApprovalURL string
 	Inputs              []ParameterDefinition
+}
+
+// PipelineBuild represents a build detail of Pipeline.
+type PipelineBuild struct {
+	Class string `json:"_class,omitempty" description:"It’s a fully qualified name and is an identifier of the producer of this resource's capability."`
+	Links struct {
+		Parent struct {
+			Class string `json:"_class,omitempty"`
+			Href  string `json:"href,omitempty"`
+		} `json:"parent,omitempty"`
+		Tests struct {
+			Class string `json:"_class,omitempty"`
+			Href  string `json:"href,omitempty"`
+		} `json:"tests,omitempty"`
+		Log struct {
+			Class string `json:"_class,omitempty"`
+			Href  string `json:"href,omitempty"`
+		} `json:"log,omitempty"`
+		Self struct {
+			Class string `json:"_class,omitempty"`
+			Href  string `json:"href,omitempty"`
+		} `json:"self,omitempty"`
+		BlueTestSummary struct {
+			Class string `json:"_class,omitempty"`
+			Href  string `json:"href,omitempty"`
+		} `json:"blueTestSummary,omitempty"`
+		Actions struct {
+			Class string `json:"_class,omitempty"`
+			Href  string `json:"href,omitempty"`
+		} `json:"actions,omitempty"`
+		Artifacts struct {
+			Class string `json:"_class,omitempty"`
+			Href  string `json:"href,omitempty"`
+		} `json:"artifacts,omitempty"`
+	} `json:"_links,omitempty" description:"references the reachable path to this resource"`
+	Actions          []interface{} `json:"actions,omitempty" description:"the list of all actions"`
+	ArtifactsZipFile interface{}   `json:"artifactsZipFile,omitempty" description:"the artifacts zip file"`
+	CauseOfBlockage  string        `json:"causeOfBlockage,omitempty" description:"the cause of blockage"`
+	Causes           []struct {
+		Class            string `json:"_class,omitempty" description:"It’s a fully qualified name and is an identifier of the producer of this resource's capability."`
+		ShortDescription string `json:"shortDescription,omitempty" description:"short description"`
+		UserID           string `json:"userId,omitempty" description:"user id"`
+		UserName         string `json:"userName,omitempty" description:"user name"`
+	} `json:"causes,omitempty"`
+	ChangeSet                 []interface{} `json:"changeSet,omitempty" description:"changeset information"`
+	Description               interface{}   `json:"description,omitempty" description:"description"`
+	DurationInMillis          interface{}   `json:"durationInMillis,omitempty" description:"duration time in millis"`
+	EnQueueTime               Time          `json:"enQueueTime,omitempty" description:"the time of enter the queue"`
+	EndTime                   Time          `json:"endTime,omitempty" description:"the time of end"`
+	EstimatedDurationInMillis interface{}   `json:"estimatedDurationInMillis,omitempty" description:"estimated duration time in millis"`
+	ID                        string        `json:"id,omitempty" description:"id"`
+	Name                      interface{}   `json:"name,omitempty" description:"name"`
+	Organization              string        `json:"organization,omitempty" description:"the name of organization"`
+	Pipeline                  string        `json:"pipeline,omitempty" description:"pipeline"`
+	Replayable                bool          `json:"replayable,omitempty" description:"replayable or not"`
+	Result                    string        `json:"result,omitempty" description:"the result of pipeline run. e.g. SUCCESS"`
+	RunSummary                interface{}   `json:"runSummary,omitempty" description:"pipeline run summary"`
+	StartTime                 Time          `json:"startTime,omitempty" description:"the time of start"`
+	State                     string        `json:"state,omitempty" description:"run state. e.g. RUNNING"`
+	Type                      string        `json:"type,omitempty" description:"type"`
+	QueueID                   string        `json:"queueId,omitempty" description:"queue id"`
 }

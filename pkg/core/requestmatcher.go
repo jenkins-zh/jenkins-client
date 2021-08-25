@@ -103,6 +103,6 @@ func getStrFromReader(request *http.Request) (text string, err error) {
 
 // String returns the text of current object
 func (request *RequestMatcher) String() string {
-	target := request.target
-	return fmt.Sprintf("%v", target)
+	//target := request.target
+	return fmt.Sprintf("%v", request.request)
 }
