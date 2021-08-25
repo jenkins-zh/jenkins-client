@@ -46,7 +46,7 @@ func (q *Client) Search(name, kind string, start, limit int) (items []JenkinsIte
 //
 // Deprecated: For clearer client of BlueOcean, please use BlueOceanClient#Search instead
 func (q *Client) SearchViaBlue(name string, start, limit int) (items []JenkinsItem, err error) {
-	boClient := BlueOceanClient{JenkinsCore: q.JenkinsCore, organization: "jenkins"}
+	boClient := BlueOceanClient{JenkinsCore: q.JenkinsCore, Organization: "jenkins"}
 	return boClient.Search(name, start, limit)
 }
 
