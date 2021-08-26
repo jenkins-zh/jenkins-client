@@ -51,8 +51,6 @@ func (boClient *BlueOceanClient) GetBuild(organization string, runID string, pip
 
 // PipelineBuild represents a build detail of Pipeline.
 type PipelineBuild struct {
-	Class                     string        `json:"_class,omitempty" description:"It’s a fully qualified name and is an identifier of the producer of this resource's capability."`
-	Links                     interface{}   `json:"_links,omitempty" description:"references the reachable path to this resource"`
 	Actions                   []interface{} `json:"actions,omitempty" description:"the list of all actions"`
 	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty" description:"the artifacts zip file"`
 	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty" description:"the cause of blockage"`
