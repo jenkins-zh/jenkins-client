@@ -1,15 +1,23 @@
 package job
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"net/http"
+	"strings"
 )
 
 // BlueOceanClient is client for operating pipelines via BlueOcean RESTful API.
 type BlueOceanClient struct {
 	core.JenkinsCore
 	Organization string
+}
+
+// Parameter contains name and value of an option.
+type Parameter struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // Search searches jobs via the BlueOcean API
@@ -21,14 +29,25 @@ func (boClient *BlueOceanClient) Search(name string, start, limit int) (items []
 	return
 }
 
+// BuildOption contains some options of Build method.
+type BuildOption struct {
+	Pipelines  []string
+	Parameters []Parameter
+}
+
 // Build builds a pipeline for specific organization and pipelines.
-func (boClient *BlueOceanClient) Build(organization string, pipelines ...string) (*PipelineBuild, error) {
-	api := fmt.Sprintf("/blue/rest/organizations/%s/%s/runs/", organization, ParsePipelinePath(pipelines...))
+func (boClient *BlueOceanClient) Build(buildOption BuildOption) (*PipelineBuild, error) {
+	api := fmt.Sprintf("/blue/rest/organizations/%s/%s/runs/", boClient.Organization, ParsePipelinePath(buildOption.Pipelines...))
 	var pb PipelineBuild
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
-	err := boClient.RequestWithData(http.MethodPost, api, headers, nil, 200, &pb)
+	if buildOption.Parameters == nil {
+		buildOption.Parameters = make([]Parameter, 0)
+	}
+	// ignore this error due to never happened
+	payloadBytes, _ := json.Marshal(buildOption.Parameters)
+	err := boClient.RequestWithData(http.MethodPost, api, headers, strings.NewReader(string(payloadBytes)), 200, &pb)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +55,8 @@ func (boClient *BlueOceanClient) Build(organization string, pipelines ...string)
 }
 
 // GetBuild gets build result for specific organization, run ID and pipelines.
-func (boClient *BlueOceanClient) GetBuild(organization string, runID string, pipelines ...string) (*PipelineBuild, error) {
-	api := fmt.Sprintf("/blue/rest/organizations/%s/%s/runs/%s/", organization, ParsePipelinePath(pipelines...), runID)
+func (boClient *BlueOceanClient) GetBuild(runID string, pipelines ...string) (*PipelineBuild, error) {
+	api := fmt.Sprintf("/blue/rest/organizations/%s/%s/runs/%s/", boClient.Organization, ParsePipelinePath(pipelines...), runID)
 	var pb PipelineBuild
 	headers := map[string]string{
 		"Content-Type": "application/json",

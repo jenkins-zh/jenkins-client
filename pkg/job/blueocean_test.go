@@ -2,6 +2,7 @@ package job
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
@@ -9,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -83,17 +85,24 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 	})
 
 	Context("Build", func() {
-		given := func(pipelineName string, statusCode int, givenResponseJSON string) {
+		given := func(pipelineName string, statusCode int, requestCustomizer func(request *http.Request), responseCustomizer func(response *http.Response)) {
 			request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/blue/rest/organizations/%s/pipelines/%s/runs/", boClient.URL, organization, pipelineName), nil)
 			request.Header.Set("Content-Type", "application/json")
 			request.Header.Add("CrumbRequestField", "Crumb")
+
+			if requestCustomizer != nil {
+				requestCustomizer(request)
+			}
 
 			response := &http.Response{
 				StatusCode: statusCode,
 				Proto:      "HTTP/1.1",
 				Request:    request,
-				Body:       io.NopCloser(bytes.NewBufferString(givenResponseJSON)),
 			}
+			if responseCustomizer != nil {
+				responseCustomizer(response)
+			}
+
 			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
 
 			requestCrumb, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", boClient.URL, "/crumbIssuer/api/json"), nil)
@@ -107,14 +116,48 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 		}
 		It("Trigger a simple Pipeline via Blue Ocean REST API", func() {
 			const pipelineName = "fakePipeline"
-
-			given(pipelineName, 200, `
+			given(pipelineName, 200, nil, func(response *http.Response) {
+				response.Body = io.NopCloser(strings.NewReader(`
 {
   "expectedBuildNumber" : 1,
   "id" : "3",
   "enQueueTime": null
-}`)
-			pipelineBuild, err := boClient.Build(organization, pipelineName)
+}`))
+			})
+			pipelineBuild, err := boClient.Build(BuildOption{
+				Pipelines: []string{pipelineName},
+			})
+			Expect(err).To(BeNil())
+			Expect(pipelineBuild).NotTo(BeNil())
+			Expect(pipelineBuild.EnQueueTime.IsZero()).Should(BeTrue())
+			Expect(pipelineBuild.ID).Should(Equal("3"))
+		})
+
+		It("Trigger a simple Pipeline with parameters", func() {
+			const pipelineName = "fakePipeline"
+			var parameters = []Parameter{{
+				Name:  "this_is_a_name",
+				Value: "this_is_a_value",
+			}}
+			paramBytes, err := json.Marshal(parameters)
+			Expect(err).To(BeNil())
+
+			given(pipelineName, 200, func(request *http.Request) {
+				request.Body = io.NopCloser(strings.NewReader(string(paramBytes)))
+			}, func(response *http.Response) {
+				response.Body = io.NopCloser(strings.NewReader(`
+{
+ "expectedBuildNumber" : 1,
+ "id" : "3",
+ "enQueueTime": null
+}`))
+			})
+
+			pipelineBuild, err := boClient.Build(BuildOption{
+				Pipelines:  []string{pipelineName},
+				Parameters: parameters,
+			})
+
 			Expect(err).To(BeNil())
 			Expect(pipelineBuild).NotTo(BeNil())
 			Expect(pipelineBuild.EnQueueTime.IsZero()).Should(BeTrue())
@@ -122,17 +165,19 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 		})
 
 		It("Trigger a simple Pipeline via Blue Ocean REST API with an error", func() {
-			const (
-				organization = "jenkins"
-				pipelineName = "fakePipeline"
-			)
-			given(pipelineName, 500, `
+			const pipelineName = "fakePipeline"
+			given(pipelineName, 500, nil, func(response *http.Response) {
+				response.Body = io.NopCloser(strings.NewReader(`
 {
  "expectedBuildNumber" : 1,
  "id" : "3",
  "enQueueTime": null
-}`)
-			_, err := boClient.Build(organization, pipelineName)
+}`))
+			})
+
+			_, err := boClient.Build(BuildOption{
+				Pipelines: []string{pipelineName},
+			})
 			Expect(err).NotTo(BeNil())
 		})
 	})
@@ -151,7 +196,6 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 		}
 		It("Get specific Pipeline run", func() {
 			const (
-				organization = "jenkins"
 				pipelineName = "fakePipeline"
 				runID        = "1"
 			)
@@ -165,13 +209,12 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
   "startTime": "2021-08-25T07:29:13.499+0000",
   "state": "RUNNING"
 }`)
-			pipelineBuild, err := boClient.GetBuild(organization, runID, pipelineName)
+			pipelineBuild, err := boClient.GetBuild(runID, pipelineName)
 			Expect(err).Should(BeNil())
 			Expect(pipelineBuild).ShouldNot(BeNil())
 		})
 		It("Get specific Pipeline run with an error", func() {
 			const (
-				organization = "jenkins"
 				pipelineName = "fakePipeline"
 				runID        = "1"
 			)
@@ -185,7 +228,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
     "field" : "name"
   } ]
 }`)
-			_, err := boClient.GetBuild(organization, runID, pipelineName)
+			_, err := boClient.GetBuild(runID, pipelineName)
 			Expect(err).ShouldNot(BeNil())
 		})
 	})
