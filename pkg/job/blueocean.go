@@ -43,7 +43,7 @@ func (c *BlueOceanClient) Build(buildOption BuildOption) (*PipelineBuild, error)
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
-	var payloadReader io.Reader = nil
+	var payloadReader io.Reader
 	if len(buildOption.Parameters) > 0 {
 		// ignore this error due to never happened
 		payloadBytes, _ := json.Marshal(map[string][]Parameter{
