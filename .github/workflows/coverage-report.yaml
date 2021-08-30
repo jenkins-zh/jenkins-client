@@ -1,8 +1,12 @@
 name: Coverage Report
 
 on:
-  - push
-  - release
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   TestAndReport:
@@ -17,6 +21,7 @@ jobs:
         run: |
           go test ./... -coverprofile coverage.out
       - name: Report
+        if: ${{ github.ref == 'refs/heads/main' }}
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
         run: |

@@ -50,7 +50,7 @@ func (request *RequestMatcher) Matches(x interface{}) bool {
 	request.target = target
 
 	match := request.request.Method == target.Method && (request.request.URL.Path == target.URL.Path ||
-		request.request.URL.Path == target.URL.Opaque)
+		request.request.URL.Opaque == target.URL.Opaque)
 
 	if match {
 		match = matchHeader(request.request.Header, request.target.Header)
