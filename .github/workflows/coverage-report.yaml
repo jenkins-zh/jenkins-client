@@ -1,8 +1,12 @@
 name: Coverage Report
 
 on:
-  - push
-  - release
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   TestAndReport:
