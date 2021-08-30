@@ -19,7 +19,7 @@ import (
 var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 	var (
 		ctrl         *gomock.Controller
-		boClient     BlueOceanClient
+		c            BlueOceanClient
 		roundTripper *mhttp.MockRoundTripper
 	)
 
@@ -27,11 +27,11 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		boClient = BlueOceanClient{}
+		c = BlueOceanClient{}
 		roundTripper = mhttp.NewMockRoundTripper(ctrl)
-		boClient.RoundTripper = roundTripper
-		boClient.URL = "http://localhost"
-		boClient.Organization = organization
+		c.RoundTripper = roundTripper
+		c.URL = "http://localhost"
+		c.Organization = organization
 	})
 
 	AfterEach(func() {
@@ -66,7 +66,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
   }
 ]`)
 
-			result, err := boClient.Search(name, 0, 50)
+			result, err := c.Search(name, 0, 50)
 			Expect(err).To(BeNil())
 			Expect(result).NotTo(BeNil())
 			Expect(len(result)).To(Equal(1))
@@ -77,7 +77,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			name := "fake"
 			given(name, `[]`)
 
-			result, err := boClient.Search(name, 0, 50)
+			result, err := c.Search(name, 0, 50)
 			Expect(err).To(BeNil())
 			Expect(result).NotTo(BeNil())
 			Expect(len(result)).To(Equal(0))
@@ -86,7 +86,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 
 	Context("Build", func() {
 		given := func(pipelineName string, statusCode int, requestCustomizer func(request *http.Request), responseCustomizer func(response *http.Response)) {
-			request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/blue/rest/organizations/%s/pipelines/%s/runs/", boClient.URL, organization, pipelineName), nil)
+			request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/blue/rest/organizations/%s/pipelines/%s/runs/", c.URL, organization, pipelineName), nil)
 			request.Header.Set("Content-Type", "application/json")
 			request.Header.Add("CrumbRequestField", "Crumb")
 
@@ -103,16 +103,16 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 				responseCustomizer(response)
 			}
 
-			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
+			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(request).WithQuery().WithBody()).Return(response, nil)
 
-			requestCrumb, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", boClient.URL, "/crumbIssuer/api/json"), nil)
+			requestCrumb, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", c.URL, "/crumbIssuer/api/json"), nil)
 			responseCrumb := &http.Response{
 				StatusCode: 200,
 				Proto:      "HTTP/1.1",
 				Request:    requestCrumb,
 				Body:       ioutil.NopCloser(bytes.NewBufferString(`{"crumbRequestField":"CrumbRequestField","crumb":"Crumb"}`)),
 			}
-			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(requestCrumb)).Return(responseCrumb, nil)
+			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(requestCrumb).WithQuery().WithBody()).Return(responseCrumb, nil)
 		}
 		It("Trigger a simple Pipeline via Blue Ocean REST API", func() {
 			const pipelineName = "fakePipeline"
@@ -124,7 +124,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
   "enQueueTime": null
 }`))
 			})
-			pipelineBuild, err := boClient.Build(BuildOption{
+			pipelineBuild, err := c.Build(BuildOption{
 				Pipelines: []string{pipelineName},
 			})
 			Expect(err).To(BeNil())
@@ -139,7 +139,9 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 				Name:  "this_is_a_name",
 				Value: "this_is_a_value",
 			}}
-			paramBytes, err := json.Marshal(parameters)
+			paramBytes, err := json.Marshal(map[string][]Parameter{
+				"parameters": parameters,
+			})
 			Expect(err).To(BeNil())
 
 			given(pipelineName, 200, func(request *http.Request) {
@@ -153,7 +155,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 }`))
 			})
 
-			pipelineBuild, err := boClient.Build(BuildOption{
+			pipelineBuild, err := c.Build(BuildOption{
 				Pipelines:  []string{pipelineName},
 				Parameters: parameters,
 			})
@@ -166,16 +168,16 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 
 		It("Trigger a simple Pipeline via Blue Ocean REST API with an error", func() {
 			const pipelineName = "fakePipeline"
-			given(pipelineName, 500, nil, func(response *http.Response) {
+			given(pipelineName, 400, nil, func(response *http.Response) {
 				response.Body = io.NopCloser(strings.NewReader(`
 {
- "expectedBuildNumber" : 1,
- "id" : "3",
- "enQueueTime": null
+    "message": "parameters.name is required element",
+    "code": 400,
+    "errors": []
 }`))
 			})
 
-			_, err := boClient.Build(BuildOption{
+			_, err := c.Build(BuildOption{
 				Pipelines: []string{pipelineName},
 			})
 			Expect(err).NotTo(BeNil())
@@ -184,7 +186,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 
 	Context("GetBuild", func() {
 		given := func(pipelineName, runID string, statusCode int, givenResponseJSON string) {
-			request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/blue/rest/organizations/%s/pipelines/%s/runs/%s/", boClient.URL, organization, pipelineName, runID), nil)
+			request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/blue/rest/organizations/%s/pipelines/%s/runs/%s/", c.URL, organization, pipelineName, runID), nil)
 			request.Header.Set("Content-Type", "application/json")
 			response := &http.Response{
 				StatusCode: statusCode,
@@ -209,7 +211,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
   "startTime": "2021-08-25T07:29:13.499+0000",
   "state": "RUNNING"
 }`)
-			pipelineBuild, err := boClient.GetBuild(runID, pipelineName)
+			pipelineBuild, err := c.GetBuild(runID, pipelineName)
 			Expect(err).Should(BeNil())
 			Expect(pipelineBuild).ShouldNot(BeNil())
 		})
@@ -228,7 +230,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
     "field" : "name"
   } ]
 }`)
-			_, err := boClient.GetBuild(runID, pipelineName)
+			_, err := c.GetBuild(runID, pipelineName)
 			Expect(err).ShouldNot(BeNil())
 		})
 	})
