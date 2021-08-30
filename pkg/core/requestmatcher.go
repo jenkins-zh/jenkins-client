@@ -54,25 +54,16 @@ func (request *RequestMatcher) Matches(x interface{}) bool {
 
 	if match {
 		match = matchHeader(request.request.Header, request.target.Header)
-		if !match {
-			Logger.Debug(fmt.Sprintf("got header: %v, want header %v", request.target.Header, request.request.Header))
-		}
 	}
 
 	if request.matchOptions.withQuery && match {
 		match = request.request.URL.RawQuery == target.URL.RawQuery
-		if !match {
-			Logger.Debug(fmt.Sprintf("got raw query: %s, want raw query: %s", request.target.URL.RawQuery, request.request.URL.RawQuery))
-		}
 	}
 
 	if request.matchOptions.withBody && match {
 		reqBody, _ := getStrFromReader(request.request)
 		targetBody, _ := getStrFromReader(target)
 		match = reqBody == targetBody
-		if !match {
-			Logger.Debug(fmt.Sprintf("got body: %s, want body: %s", targetBody, reqBody))
-		}
 	}
 
 	return match
