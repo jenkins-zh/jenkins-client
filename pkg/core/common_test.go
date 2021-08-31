@@ -206,6 +206,29 @@ var _ = Describe("common test", func() {
 			Expect(err.Error()).To(Equal("unexpected status code: 500"))
 		})
 
+		It("handle a request contains crumb in it", func() {
+			requestCrumb, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", jenkinsCore.URL, "/crumbIssuer/api/json"), nil)
+			responseCrumb := &http.Response{
+				StatusCode: 200,
+				Proto:      "HTTP/1.1",
+				Request:    requestCrumb,
+				Body:       ioutil.NopCloser(bytes.NewBufferString(`{
+ "crumb": "3c4525418803ddec7003a6a03995ba94dc151c9686825e139a032b3142249942",
+ "crumbRequestField": "Jenkins-Crumb"
+}`)),
+			}
+			roundTripper.EXPECT().
+				RoundTrip(NewRequestMatcher(requestCrumb)).Return(responseCrumb, nil)
+
+			fakePostRequest, _ := http.NewRequest(http.MethodGet, "fake", nil)
+			fakePostRequest.Header.Add("Jenkins-Crumb", "fake")
+
+			err := jenkinsCore.CrumbHandle(fakePostRequest)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(fakePostRequest.Header.Values("Jenkins-Crumb"))).To(Equal(1))
+			Expect(fakePostRequest.Header.Values("Jenkins-Crumb")[0]).To(Equal("3c4525418803ddec7003a6a03995ba94dc151c9686825e139a032b3142249942"))
+		})
+
 		It("test GetClient", func() {
 			jenkinsCore.RoundTripper = nil
 			jenkinsCore.Proxy = "kljasdsll"
