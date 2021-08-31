@@ -111,7 +111,7 @@ func (j *JenkinsCore) CrumbHandle(request *http.Request) error {
 		// cannot get the crumb could be a normal situation
 		j.CrumbRequestField = c.CrumbRequestField
 		j.Crumb = c.Crumb
-		request.Header.Add(j.CrumbRequestField, j.Crumb)
+		request.Header.Set(j.CrumbRequestField, j.Crumb)
 	} else {
 		return err
 	}
