@@ -33,35 +33,37 @@ func NewVerboseRequestMatcher(request *http.Request) *RequestMatcher {
 }
 
 // WithQuery returns a matcher with query
-func (request *RequestMatcher) WithQuery() *RequestMatcher {
-	request.matchOptions.withQuery = true
-	return request
+func (matcher *RequestMatcher) WithQuery() *RequestMatcher {
+	matcher.matchOptions.withQuery = true
+	return matcher
 }
 
 // WithBody returns a matcher with body
-func (request *RequestMatcher) WithBody() *RequestMatcher {
-	request.matchOptions.withBody = true
-	return request
+func (matcher *RequestMatcher) WithBody() *RequestMatcher {
+	matcher.matchOptions.withBody = true
+	return matcher
 }
 
 // Matches returns a matcher with given function
-func (request *RequestMatcher) Matches(x interface{}) bool {
+func (matcher *RequestMatcher) Matches(x interface{}) bool {
 	target := x.(*http.Request)
-	request.target = target
+	matcher.target = target
+	request := matcher.request
 
-	match := request.request.Method == target.Method && (request.request.URL.Path == target.URL.Path ||
-		request.request.URL.Opaque == target.URL.Opaque)
+	match := request.Method == target.Method &&
+		request.URL.Path == target.URL.Path &&
+		request.URL.Opaque == target.URL.Opaque
 
 	if match {
-		match = matchHeader(request.request.Header, request.target.Header)
+		match = matchHeader(request.Header, matcher.target.Header)
 	}
 
-	if request.matchOptions.withQuery && match {
-		match = request.request.URL.RawQuery == target.URL.RawQuery
+	if matcher.matchOptions.withQuery && match {
+		match = request.URL.RawQuery == target.URL.RawQuery
 	}
 
-	if request.matchOptions.withBody && match {
-		reqBody, _ := getStrFromReader(request.request)
+	if matcher.matchOptions.withBody && match {
+		reqBody, _ := getStrFromReader(request)
 		targetBody, _ := getStrFromReader(target)
 		match = reqBody == targetBody
 	}
@@ -102,6 +104,6 @@ func getStrFromReader(request *http.Request) (text string, err error) {
 }
 
 // String returns the text of current object
-func (request *RequestMatcher) String() string {
-	return fmt.Sprintf("%v", request.request)
+func (matcher *RequestMatcher) String() string {
+	return fmt.Sprintf("%v", matcher.request)
 }

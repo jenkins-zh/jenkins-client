@@ -6,6 +6,7 @@ import (
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -34,11 +35,16 @@ func (c *BlueOceanClient) Search(name string, start, limit int) (items []Jenkins
 type BuildOption struct {
 	Pipelines  []string
 	Parameters []Parameter
+	Branch     string
 }
 
 // Build builds a pipeline for specific organization and pipelines.
 func (c *BlueOceanClient) Build(buildOption BuildOption) (*PipelineBuild, error) {
-	api := fmt.Sprintf("/blue/rest/organizations/%s/%s/runs/", c.Organization, ParsePipelinePath(buildOption.Pipelines...))
+	api := fmt.Sprintf("/blue/rest/organizations/%s/%s", c.Organization, ParsePipelinePath(buildOption.Pipelines...))
+	if buildOption.Branch != "" {
+		api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(buildOption.Branch))
+	}
+	api = fmt.Sprintf("%s/runs/", api)
 	var pb PipelineBuild
 	headers := map[string]string{
 		"Content-Type": "application/json",
@@ -59,9 +65,20 @@ func (c *BlueOceanClient) Build(buildOption BuildOption) (*PipelineBuild, error)
 	return &pb, nil
 }
 
+// GetBuildOption contains some options while getting a specific build.
+type GetBuildOption struct {
+	Pipelines []string
+	RunID     string
+	Branch    string
+}
+
 // GetBuild gets build result for specific organization, run ID and pipelines.
-func (c *BlueOceanClient) GetBuild(runID string, pipelines ...string) (*PipelineBuild, error) {
-	api := fmt.Sprintf("/blue/rest/organizations/%s/%s/runs/%s/", c.Organization, ParsePipelinePath(pipelines...), runID)
+func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineBuild, error) {
+	api := fmt.Sprintf("/blue/rest/organizations/%s/%s", c.Organization, ParsePipelinePath(option.Pipelines...))
+	if option.Branch != "" {
+		api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(option.Branch))
+	}
+	api = fmt.Sprintf("%s/runs/%s/", api, option.RunID)
 	var pb PipelineBuild
 	headers := map[string]string{
 		"Content-Type": "application/json",
