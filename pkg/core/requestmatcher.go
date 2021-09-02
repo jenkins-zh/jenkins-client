@@ -55,7 +55,7 @@ func (matcher *RequestMatcher) Matches(x interface{}) bool {
 		request.URL.Opaque == target.URL.Opaque
 
 	if match {
-		match = matchHeader(request.Header, matcher.target.Header)
+		match = matchHeader(request.Header, target.Header)
 	}
 
 	if matcher.matchOptions.withQuery && match {
