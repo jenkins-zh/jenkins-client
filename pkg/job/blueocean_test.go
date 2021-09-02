@@ -221,12 +221,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 
 	Context("GetBuild", func() {
 		given := func(pipelineName, runID string, branch string, statusCode int, givenResponseJSON string) {
-			api := fmt.Sprintf("%s/blue/rest/organizations/%s/pipelines/%s", c.URL, organization, pipelineName)
-			if branch != "" {
-				api = fmt.Sprintf("%s/branches/%s", api, branch)
-			}
-			api = fmt.Sprintf("%s/runs/%s/", api, runID)
-			api = c.getGetBuildAPI(GetBuildOption{
+			api := c.getGetBuildAPI(GetBuildOption{
 				Pipelines: []string{pipelineName},
 				Branch:    branch,
 				RunID:     runID,
