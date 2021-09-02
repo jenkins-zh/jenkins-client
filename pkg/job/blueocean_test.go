@@ -10,7 +10,9 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -85,8 +87,17 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 	})
 
 	Context("Build", func() {
-		given := func(pipelineName string, statusCode int, requestCustomizer func(request *http.Request), responseCustomizer func(response *http.Response)) {
-			request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/blue/rest/organizations/%s/pipelines/%s/runs/", c.URL, organization, pipelineName), nil)
+		given := func(pipelineName string,
+			branch string,
+			statusCode int,
+			requestCustomizer func(request *http.Request),
+			responseCustomizer func(response *http.Response)) {
+			api := c.getBuildAPI(BuildOption{
+				Pipelines: []string{pipelineName},
+				Branch:    branch,
+			})
+
+			request, _ := http.NewRequest(http.MethodPost, api, nil)
 			request.Header.Set("Content-Type", "application/json")
 			request.Header.Add("CrumbRequestField", "Crumb")
 
@@ -114,9 +125,10 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			}
 			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(requestCrumb).WithQuery().WithBody()).Return(responseCrumb, nil)
 		}
+
 		It("Trigger a simple Pipeline via Blue Ocean REST API", func() {
 			const pipelineName = "fakePipeline"
-			given(pipelineName, 200, nil, func(response *http.Response) {
+			given(pipelineName, "", 200, nil, func(response *http.Response) {
 				response.Body = io.NopCloser(strings.NewReader(`
 {
   "expectedBuildNumber" : 1,
@@ -144,7 +156,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			})
 			Expect(err).To(BeNil())
 
-			given(pipelineName, 200, func(request *http.Request) {
+			given(pipelineName, "", 200, func(request *http.Request) {
 				request.Body = io.NopCloser(strings.NewReader(string(paramBytes)))
 			}, func(response *http.Response) {
 				response.Body = io.NopCloser(strings.NewReader(`
@@ -168,7 +180,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 
 		It("Trigger a simple Pipeline via Blue Ocean REST API with an error", func() {
 			const pipelineName = "fakePipeline"
-			given(pipelineName, 400, nil, func(response *http.Response) {
+			given(pipelineName, "", 400, nil, func(response *http.Response) {
 				response.Body = io.NopCloser(strings.NewReader(`
 {
     "message": "parameters.name is required element",
@@ -182,11 +194,40 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			})
 			Expect(err).NotTo(BeNil())
 		})
+
+		It("Trigger a multi branch Pipeline", func() {
+			const (
+				pipelineName = "fakePipeline"
+				branch       = "feature-1"
+			)
+			given(pipelineName, "feature-1", 200, nil, func(response *http.Response) {
+				response.Body = io.NopCloser(strings.NewReader(`
+{
+  "expectedBuildNumber" : 1,
+  "id" : "3",
+  "enQueueTime": null
+}`))
+			})
+
+			pb, err := c.Build(BuildOption{
+				Pipelines: []string{pipelineName},
+				Branch:    branch,
+			})
+			Expect(err).To(BeNil())
+			Expect(pb).NotTo(BeNil())
+			Expect(pb.ID).Should(Equal("3"))
+		})
 	})
 
 	Context("GetBuild", func() {
-		given := func(pipelineName, runID string, statusCode int, givenResponseJSON string) {
-			request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/blue/rest/organizations/%s/pipelines/%s/runs/%s/", c.URL, organization, pipelineName, runID), nil)
+		given := func(pipelineName, runID string, branch string, statusCode int, givenResponseJSON string) {
+			api := c.getGetBuildAPI(GetBuildOption{
+				Pipelines: []string{pipelineName},
+				Branch:    branch,
+				RunID:     runID,
+			})
+
+			request, _ := http.NewRequest(http.MethodGet, api, nil)
 			request.Header.Set("Content-Type", "application/json")
 			response := &http.Response{
 				StatusCode: statusCode,
@@ -201,7 +242,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 				pipelineName = "fakePipeline"
 				runID        = "1"
 			)
-			given(pipelineName, runID, 200, `
+			given(pipelineName, runID, "", 200, `
 {
   "enQueueTime": "2021-08-25T07:29:13.483+0000",
   "endTime": null,
@@ -211,7 +252,10 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
   "startTime": "2021-08-25T07:29:13.499+0000",
   "state": "RUNNING"
 }`)
-			pipelineBuild, err := c.GetBuild(runID, pipelineName)
+			pipelineBuild, err := c.GetBuild(GetBuildOption{
+				RunID:     runID,
+				Pipelines: []string{pipelineName},
+			})
 			Expect(err).Should(BeNil())
 			Expect(pipelineBuild).ShouldNot(BeNil())
 		})
@@ -220,7 +264,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 				pipelineName = "fakePipeline"
 				runID        = "1"
 			)
-			given(pipelineName, runID, 500, `
+			given(pipelineName, runID, "", 500, `
 {
   "message" : "Failed to create Git pipeline: demo",
   "code" : 400,
@@ -230,8 +274,182 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
     "field" : "name"
   } ]
 }`)
-			_, err := c.GetBuild(runID, pipelineName)
+			_, err := c.GetBuild(GetBuildOption{
+				RunID:     runID,
+				Pipelines: []string{pipelineName},
+			})
 			Expect(err).ShouldNot(BeNil())
 		})
+		It("Get multi branch Pipeline run", func() {
+			const (
+				pipelineName = "fakePipeline"
+				runID        = "1"
+				branch       = "main"
+			)
+			given(pipelineName, runID, branch, 200, `
+{
+  "enQueueTime": "2021-08-25T07:29:13.483+0000",
+  "endTime": null,
+  "estimatedDurationInMillis": 35661,
+  "id": "5",
+  "result": "UNKNOWN",
+  "startTime": "2021-08-25T07:29:13.499+0000",
+  "state": "RUNNING"
+}`)
+			pipelineBuild, err := c.GetBuild(GetBuildOption{
+				RunID:     runID,
+				Pipelines: []string{pipelineName},
+				Branch:    branch,
+			})
+			Expect(err).Should(BeNil())
+			Expect(pipelineBuild).ShouldNot(BeNil())
+		})
+
 	})
 })
+
+func Test_getHeaders(t *testing.T) {
+	tests := []struct {
+		name string
+		want map[string]string
+	}{{
+		name: "Get headers",
+		want: map[string]string{
+			"Content-Type": "application/json",
+		},
+	},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getHeaders(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getHeaders() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBlueOceanClient_getBuildAPI(t *testing.T) {
+	type fields struct {
+		Organization string
+	}
+	type args struct {
+		option BuildOption
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{{
+		name: "Get `Build` API",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			BuildOption{
+				Pipelines: []string{"pipelineA"},
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/",
+	}, {
+		name: "Get `Build` API with branch",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			BuildOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "featureA",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/featureA/runs/",
+	}, {
+		name: "Get `Build` API with branch to be escaped",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			BuildOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "feature/a",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/feature%2Fa/runs/",
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jenkinsCore := core.JenkinsCore{}
+			c := &BlueOceanClient{
+				JenkinsCore:  jenkinsCore,
+				Organization: tt.fields.Organization,
+			}
+			if got := c.getBuildAPI(tt.args.option); got != tt.want {
+				t.Errorf("getBuildAPI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBlueOceanClient_getGetBuildAPI(t *testing.T) {
+	type fields struct {
+		Organization string
+	}
+	type args struct {
+		option GetBuildOption
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{{
+		name: "Get `GetBuild` API",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			GetBuildOption{
+				Pipelines: []string{"pipelineA"},
+				RunID:     "123",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/",
+	}, {
+		name: "Get `GetBuild` API with branch",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			GetBuildOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "featureA",
+				RunID:     "123",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/featureA/runs/123/",
+	}, {
+		name: "Get `GetBuild` API with branch to be escaped",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			GetBuildOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "feature/a",
+				RunID:     "123",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/feature%2Fa/runs/123/",
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &BlueOceanClient{
+				JenkinsCore:  core.JenkinsCore{},
+				Organization: tt.fields.Organization,
+			}
+			if got := c.getGetBuildAPI(tt.args.option); got != tt.want {
+				t.Errorf("getGetBuildAPI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
