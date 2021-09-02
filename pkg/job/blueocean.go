@@ -31,9 +31,15 @@ func (c *BlueOceanClient) Search(name string, start, limit int) (items []Jenkins
 	return
 }
 
-type option interface {
+type pipelinesGetter interface {
 	getPipelines() []string
+}
+
+type branchGetter interface {
 	getBranch() string
+}
+
+type runIDGetter interface {
 	getRunID() string
 }
 
@@ -50,10 +56,6 @@ func (o BuildOption) getPipelines() []string {
 
 func (o BuildOption) getBranch() string {
 	return o.Branch
-}
-
-func (o BuildOption) getRunID() string {
-	return ""
 }
 
 // GetBuildOption contains some options while getting a specific build.
@@ -103,19 +105,18 @@ func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineBuild, error
 	return &pb, nil
 }
 
-func (c *BlueOceanClient) getAPIByOption(option option) string {
-	api := "/blue/rest/organizations/" + c.Organization + "/" + parsePipelinePath(option.getPipelines())
-	//api := fmt.Sprintf("/blue/rest/organizations/%s/%s", c.Organization, parsePipelinePath(option.getPipelines()))
-	if option.getBranch() != "" {
-		//api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(option.getBranch()))
-		api = api + "/branches/" + url.PathEscape(option.getBranch())
+func (c *BlueOceanClient) getAPIByOption(option interface{}) string {
+	pipelinesGetter, ok := option.(pipelinesGetter)
+	if !ok {
+		return ""
 	}
-
-	//api = fmt.Sprintf("%s/runs", api)
+	api := "/blue/rest/organizations/" + c.Organization + "/" + parsePipelinePath(pipelinesGetter.getPipelines())
+	if branchGetter, ok := option.(branchGetter); ok && branchGetter.getBranch() != "" {
+		api = api + "/branches/" + url.PathEscape(branchGetter.getBranch())
+	}
 	api = api + "/runs/"
-	if option.getRunID() != "" {
-		//api = fmt.Sprintf("%s/%s", api, option.getRunID())
-		api = api + option.getRunID() + "/"
+	if runIDGetter, ok := option.(runIDGetter); ok && runIDGetter.getRunID() != "" {
+		api = api + runIDGetter.getRunID() + "/"
 	}
 	return api
 }

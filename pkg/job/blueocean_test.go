@@ -333,7 +333,7 @@ func TestBlueOceanClient_getAPI(t *testing.T) {
 		Organization string
 	}
 	type args struct {
-		option option
+		option interface{}
 	}
 	tests := []struct {
 		name   string
@@ -341,6 +341,15 @@ func TestBlueOceanClient_getAPI(t *testing.T) {
 		args   args
 		want   string
 	}{{
+		name: "Nil option",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			nil,
+		},
+		want: "",
+	}, {
 		name: "Get `Build` API",
 		fields: fields{
 			Organization: "jenkins",
