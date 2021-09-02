@@ -464,8 +464,9 @@ func ParseJobPath(jobName string) (path string) {
 	return
 }
 
-// ParsePipelinePath parses multiple pipelines and leads with slash.
-func ParsePipelinePath(pipelines ...string) string {
+// parsePipelinePath parses multiple pipelines and leads with slash.
+// e.g.: pipelines/a/pipelines/b
+func parsePipelinePath(pipelines []string) string {
 	if len(pipelines) == 0 {
 		return ""
 	}

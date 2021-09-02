@@ -10,7 +10,9 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -305,3 +307,112 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 
 	})
 })
+
+func Test_getHeaders(t *testing.T) {
+	tests := []struct {
+		name string
+		want map[string]string
+	}{{
+		name: "Get headers",
+		want: map[string]string{
+			"Content-Type": "application/json",
+		},
+	},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getHeaders(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getHeaders() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBlueOceanClient_getAPI(t *testing.T) {
+	type fields struct {
+		Organization string
+	}
+	type args struct {
+		option option
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{{
+		name: "Get `Build` API",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			BuildOption{
+				Pipelines: []string{"pipelineA"},
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/",
+	}, {
+		name: "Get `Build` API with branch",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			BuildOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "featureA",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/featureA/runs/",
+	}, {
+		name: "Get `Build` API with branch to be escaped",
+		fields: fields{
+			Organization: "jenkins",
+		},
+		args: args{
+			BuildOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "feature/a",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/feature%2Fa/runs/",
+	},
+		{
+			name: "Get `GetBuild` API",
+			fields: fields{
+				Organization: "jenkins",
+			},
+			args: args{
+				GetBuildOption{
+					Pipelines: []string{"pipelineA"},
+					RunID:     "123",
+				},
+			},
+			want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/",
+		}, {
+			name: "Get `GetBuild` API with branch",
+			fields: fields{
+				Organization: "jenkins",
+			},
+			args: args{
+				GetBuildOption{
+					Pipelines: []string{"pipelineA"},
+					Branch:    "featureA",
+					RunID:     "123",
+				},
+			},
+			want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/featureA/runs/123/",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jenkinsCore := core.JenkinsCore{}
+			c := &BlueOceanClient{
+				JenkinsCore:  jenkinsCore,
+				Organization: tt.fields.Organization,
+			}
+			if got := c.getAPIByOption(tt.args.option); got != tt.want {
+				t.Errorf("getAPIByOption() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -31,6 +31,12 @@ func (c *BlueOceanClient) Search(name string, start, limit int) (items []Jenkins
 	return
 }
 
+type option interface {
+	getPipelines() []string
+	getBranch() string
+	getRunID() string
+}
+
 // BuildOption contains some options of Build method.
 type BuildOption struct {
 	Pipelines  []string
@@ -38,31 +44,16 @@ type BuildOption struct {
 	Branch     string
 }
 
-// Build builds a pipeline for specific organization and pipelines.
-func (c *BlueOceanClient) Build(buildOption BuildOption) (*PipelineBuild, error) {
-	api := fmt.Sprintf("/blue/rest/organizations/%s/%s", c.Organization, ParsePipelinePath(buildOption.Pipelines...))
-	if buildOption.Branch != "" {
-		api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(buildOption.Branch))
-	}
-	api = fmt.Sprintf("%s/runs/", api)
-	var pb PipelineBuild
-	headers := map[string]string{
-		"Content-Type": "application/json",
-	}
-	var payloadReader io.Reader
-	if len(buildOption.Parameters) > 0 {
-		// ignore this error due to never happened
-		payloadBytes, _ := json.Marshal(map[string][]Parameter{
-			"parameters": buildOption.Parameters,
-		})
-		payloadReader = strings.NewReader(string(payloadBytes))
-	}
+func (o BuildOption) getPipelines() []string {
+	return o.Pipelines
+}
 
-	err := c.RequestWithData(http.MethodPost, api, headers, payloadReader, 200, &pb)
-	if err != nil {
-		return nil, err
-	}
-	return &pb, nil
+func (o BuildOption) getBranch() string {
+	return o.Branch
+}
+
+func (o BuildOption) getRunID() string {
+	return ""
 }
 
 // GetBuildOption contains some options while getting a specific build.
@@ -72,22 +63,67 @@ type GetBuildOption struct {
 	Branch    string
 }
 
-// GetBuild gets build result for specific organization, run ID and pipelines.
-func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineBuild, error) {
-	api := fmt.Sprintf("/blue/rest/organizations/%s/%s", c.Organization, ParsePipelinePath(option.Pipelines...))
-	if option.Branch != "" {
-		api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(option.Branch))
-	}
-	api = fmt.Sprintf("%s/runs/%s/", api, option.RunID)
+func (o GetBuildOption) getPipelines() []string {
+	return o.Pipelines
+}
+
+func (o GetBuildOption) getBranch() string {
+	return o.Branch
+}
+
+func (o GetBuildOption) getRunID() string {
+	return o.RunID
+}
+
+// Build builds a pipeline for specific organization and pipelines.
+func (c *BlueOceanClient) Build(option BuildOption) (*PipelineBuild, error) {
 	var pb PipelineBuild
-	headers := map[string]string{
-		"Content-Type": "application/json",
+	var payloadReader io.Reader
+	if len(option.Parameters) > 0 {
+		// ignore this error due to never happened
+		payloadBytes, _ := json.Marshal(map[string][]Parameter{
+			"parameters": option.Parameters,
+		})
+		payloadReader = strings.NewReader(string(payloadBytes))
 	}
-	err := c.RequestWithData(http.MethodGet, api, headers, nil, 200, &pb)
+	err := c.RequestWithData(http.MethodPost, c.getAPIByOption(option), getHeaders(), payloadReader, 200, &pb)
 	if err != nil {
 		return nil, err
 	}
 	return &pb, nil
+}
+
+// GetBuild gets build result for specific organization, run ID and pipelines.
+func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineBuild, error) {
+	var pb PipelineBuild
+	err := c.RequestWithData(http.MethodGet, c.getAPIByOption(option), getHeaders(), nil, 200, &pb)
+	if err != nil {
+		return nil, err
+	}
+	return &pb, nil
+}
+
+func (c *BlueOceanClient) getAPIByOption(option option) string {
+	api := "/blue/rest/organizations/" + c.Organization + "/" + parsePipelinePath(option.getPipelines())
+	//api := fmt.Sprintf("/blue/rest/organizations/%s/%s", c.Organization, parsePipelinePath(option.getPipelines()))
+	if option.getBranch() != "" {
+		//api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(option.getBranch()))
+		api = api + "/branches/" + url.PathEscape(option.getBranch())
+	}
+
+	//api = fmt.Sprintf("%s/runs", api)
+	api = api + "/runs/"
+	if option.getRunID() != "" {
+		//api = fmt.Sprintf("%s/%s", api, option.getRunID())
+		api = api + option.getRunID() + "/"
+	}
+	return api
+}
+
+func getHeaders() map[string]string {
+	return map[string]string{
+		"Content-Type": "application/json",
+	}
 }
 
 // PipelineBuild represents a build detail of Pipeline.
