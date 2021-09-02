@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+const (
+	searchAPIPrefix       = "/blue/rest/search"
+	organizationAPIPrefix = "/blue/rest/organizations"
+)
+
 // BlueOceanClient is client for operating pipelines via BlueOcean RESTful API.
 type BlueOceanClient struct {
 	core.JenkinsCore
@@ -24,23 +29,11 @@ type Parameter struct {
 
 // Search searches jobs via the BlueOcean API
 func (c *BlueOceanClient) Search(name string, start, limit int) (items []JenkinsItem, err error) {
-	api := fmt.Sprintf("/blue/rest/search/?q=pipeline:*%s*;type:pipeline;organization:%s;excludedFromFlattening=jenkins.branch.MultiBranchProject,com.cloudbees.hudson.plugins.folder.AbstractFolder&filter=no-folders&start=%d&limit=%d",
-		name, c.Organization, start, limit)
+	api := fmt.Sprintf("%s/?q=pipeline:*%s*;type:pipeline;organization:%s;excludedFromFlattening=jenkins.branch.MultiBranchProject,com.cloudbees.hudson.plugins.folder.AbstractFolder&filter=no-folders&start=%d&limit=%d",
+		searchAPIPrefix, name, c.Organization, start, limit)
 	err = c.RequestWithData(http.MethodGet, api,
 		nil, nil, 200, &items)
 	return
-}
-
-type pipelinesGetter interface {
-	getPipelines() []string
-}
-
-type branchGetter interface {
-	getBranch() string
-}
-
-type runIDGetter interface {
-	getRunID() string
 }
 
 // BuildOption contains some options of Build method.
@@ -50,31 +43,11 @@ type BuildOption struct {
 	Branch     string
 }
 
-func (o BuildOption) getPipelines() []string {
-	return o.Pipelines
-}
-
-func (o BuildOption) getBranch() string {
-	return o.Branch
-}
-
 // GetBuildOption contains some options while getting a specific build.
 type GetBuildOption struct {
 	Pipelines []string
 	RunID     string
 	Branch    string
-}
-
-func (o GetBuildOption) getPipelines() []string {
-	return o.Pipelines
-}
-
-func (o GetBuildOption) getBranch() string {
-	return o.Branch
-}
-
-func (o GetBuildOption) getRunID() string {
-	return o.RunID
 }
 
 // Build builds a pipeline for specific organization and pipelines.
@@ -88,36 +61,38 @@ func (c *BlueOceanClient) Build(option BuildOption) (*PipelineBuild, error) {
 		})
 		payloadReader = strings.NewReader(string(payloadBytes))
 	}
-	err := c.RequestWithData(http.MethodPost, c.getAPIByOption(option), getHeaders(), payloadReader, 200, &pb)
+	err := c.RequestWithData(http.MethodPost, c.getBuildAPI(option), getHeaders(), payloadReader, 200, &pb)
 	if err != nil {
 		return nil, err
 	}
 	return &pb, nil
+}
+
+func (c *BlueOceanClient) getBuildAPI(option BuildOption) string {
+	api := fmt.Sprintf("%s/%s/%s", organizationAPIPrefix, c.Organization, parsePipelinePath(option.Pipelines))
+	if option.Branch != "" {
+		api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(option.Branch))
+	}
+	api = fmt.Sprintf("%s/runs/", api)
+	return api
 }
 
 // GetBuild gets build result for specific organization, run ID and pipelines.
 func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineBuild, error) {
 	var pb PipelineBuild
-	err := c.RequestWithData(http.MethodGet, c.getAPIByOption(option), getHeaders(), nil, 200, &pb)
+	err := c.RequestWithData(http.MethodGet, c.getGetBuildAPI(option), getHeaders(), nil, 200, &pb)
 	if err != nil {
 		return nil, err
 	}
 	return &pb, nil
 }
 
-func (c *BlueOceanClient) getAPIByOption(option interface{}) string {
-	pipelinesGetter, ok := option.(pipelinesGetter)
-	if !ok {
-		return ""
+func (c *BlueOceanClient) getGetBuildAPI(option GetBuildOption) string {
+	api := fmt.Sprintf("%s/%s/%s", organizationAPIPrefix, c.Organization, parsePipelinePath(option.Pipelines))
+	if option.Branch != "" {
+		api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(option.Branch))
 	}
-	api := "/blue/rest/organizations/" + c.Organization + "/" + parsePipelinePath(pipelinesGetter.getPipelines())
-	if branchGetter, ok := option.(branchGetter); ok && branchGetter.getBranch() != "" {
-		api = api + "/branches/" + url.PathEscape(branchGetter.getBranch())
-	}
-	api = api + "/runs/"
-	if runIDGetter, ok := option.(runIDGetter); ok && runIDGetter.getRunID() != "" {
-		api = api + runIDGetter.getRunID() + "/"
-	}
+	api = fmt.Sprintf("%s/runs/%s/", api, option.RunID)
 	return api
 }
 
