@@ -453,3 +453,47 @@ func TestBlueOceanClient_getGetBuildAPI(t *testing.T) {
 		})
 	}
 }
+
+func TestBlueOceanClient_getGetNodesAPI(t *testing.T) {
+	type args struct {
+		option GetNodesOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{{
+		name: "Option without limit",
+		args: args{
+			option: GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "main",
+				RunID:     "123",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/main/runs/123/nodes/?limit=10000",
+	}, {
+		name: "Option with limit",
+		args: args{
+			option: GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "main",
+				RunID:     "123",
+				Limit:     456,
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/main/runs/123/nodes/?limit=456",
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &BlueOceanClient{
+				JenkinsCore:  core.JenkinsCore{},
+				Organization: "jenkins",
+			}
+			if got := c.getGetNodesAPI(tt.args.option); got != tt.want {
+				t.Errorf("getGetNodesAPI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
