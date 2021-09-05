@@ -106,8 +106,8 @@ type GetNodesOption struct {
 }
 
 // GetNodes gets nodes details
-func (c *BlueOceanClient) GetNodes(option GetNodesOption) ([]PipelineRunNode, error) {
-	var nodes []PipelineRunNode
+func (c *BlueOceanClient) GetNodes(option GetNodesOption) ([]Node, error) {
+	var nodes []Node
 	err := c.RequestWithData(http.MethodGet, c.getGetNodesAPI(option), getHeaders(), nil, 200, &nodes)
 	if err != nil {
 		return nil, err
@@ -161,7 +161,8 @@ type PipelineBuild struct {
 	QueueID                   string        `json:"queueId,omitempty"`
 }
 
-type PipelineRunNode struct {
+// Node represents a node detail of a PipelineRun.
+type Node struct {
 	DisplayDescription string `json:"displayDescription,omitempty"`
 	DisplayName        string `json:"displayName,omitempty"`
 	DurationInMillis   int    `json:"durationInMillis,omitempty"`
@@ -177,11 +178,13 @@ type PipelineRunNode struct {
 	Restartable        bool   `json:"restartable,omitempty"`
 }
 
+// Edge represents edge of Pipeline flow graph.
 type Edge struct {
 	ID   string `json:"id,omitempty"`
 	Type string `json:"type,omitempty"`
 }
 
+// Input contains input step data.
 type Input struct {
 	ID         string                `json:"id,omitempty"`
 	Message    string                `json:"message,omitempty"`
