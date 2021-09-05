@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -305,6 +306,78 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			Expect(pipelineBuild).ShouldNot(BeNil())
 		})
 
+	})
+
+	Context("GetNodes", func() {
+		given := func(option GetNodesOption, mockResponseStatus int, mockResponseData string) {
+			api := c.getGetNodesAPI(option)
+			mockRequest, err := http.NewRequest(http.MethodGet, api, nil)
+			if err != nil {
+				return
+			}
+			mockRequest.Header.Set("Content-Type", "application/json")
+			mockResponse := &http.Response{
+				StatusCode: mockResponseStatus,
+				Proto:      "HTTP/1.1",
+				Request:    mockRequest,
+				Body:       io.NopCloser(bytes.NewBufferString(mockResponseData)),
+			}
+			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(mockRequest)).Return(mockResponse, nil)
+		}
+		It("Get Pipeline nodes detail", func() {
+			given(GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				RunID:     "123",
+			}, 200, `
+[
+  {
+    "displayName": "build",
+    "durationInMillis": 219,
+    "edges": [
+      {
+        "id": "9"
+      }
+    ],
+    "id": "3",
+    "result": "SUCCESS",
+    "startTime": "2021-09-05T15:15:08.719-0700",
+    "state": "FINISHED"
+  }
+]`)
+
+			nodes, err := c.GetNodes(GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				RunID:     "123",
+			})
+			Expect(err).Should(BeNil())
+			Expect(len(nodes)).Should(Equal(1))
+			Expect(nodes[0].ID).Should(Equal("3"))
+			Expect(nodes[0].Result).Should(Equal("SUCCESS"))
+			Expect(nodes[0].StartTime.In(time.UTC)).Should(Equal(time.Date(2021, 9, 5, 22, 15, 8, 719000000, time.UTC)))
+		})
+		It("Get Pipeline nodes detail with error", func() {
+			given(GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				RunID:     "456",
+			}, 400, `
+{
+  "message": "Failed to get pipeline run nodes detail: pipelineA/456",
+  "code": 400,
+  "errors": [
+    {
+      "message": "pipeline run ID was not exist",
+      "code": "NOT_EXISTS",
+      "field": "runID"
+    }
+  ]
+}`)
+
+			_, err := c.GetNodes(GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				RunID:     "456",
+			})
+			Expect(err).ShouldNot(BeNil())
+		})
 	})
 })
 

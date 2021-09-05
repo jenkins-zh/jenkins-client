@@ -168,7 +168,7 @@ type PipelineRunNode struct {
 	ID                 string `json:"id,omitempty"`
 	Input              *Input `json:"input,omitempty"`
 	Result             string `json:"result,omitempty"`
-	StartTime          string `json:"startTime,omitempty"`
+	StartTime          Time   `json:"startTime,omitempty"`
 	State              string `json:"state,omitempty"`
 	Type               string `json:"type,omitempty"`
 	CauseOfBlockage    string `json:"causeOfBlockage,omitempty"`
