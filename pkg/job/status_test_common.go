@@ -1,15 +1,16 @@
-package core
+package job
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 )
 
-//PrepareGetStatus only for test
+// PrepareGetStatus only for test
 func PrepareGetStatus(roundTripper *mhttp.MockRoundTripper, rootURL, user, password string) {
 	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/json", rootURL), nil)
 	response := &http.Response{
@@ -20,7 +21,7 @@ func PrepareGetStatus(roundTripper *mhttp.MockRoundTripper, rootURL, user, passw
 	}
 	response.Header.Add("X-Jenkins", "version")
 	roundTripper.EXPECT().
-		RoundTrip(NewRequestMatcher(request)).Return(response, nil)
+		RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
 
 	if user != "" && password != "" {
 		request.SetBasicAuth(user, password)

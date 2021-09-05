@@ -212,7 +212,7 @@ var _ = Describe("common test", func() {
 				StatusCode: 200,
 				Proto:      "HTTP/1.1",
 				Request:    requestCrumb,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(`{
+				Body: ioutil.NopCloser(bytes.NewBufferString(`{
  "crumb": "3c4525418803ddec7003a6a03995ba94dc151c9686825e139a032b3142249942",
  "crumbRequestField": "Jenkins-Crumb"
 }`)),

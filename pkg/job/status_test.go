@@ -2,7 +2,6 @@ package job
 
 import (
 	"github.com/golang/mock/gomock"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -38,7 +37,7 @@ var _ = Describe("status test", func() {
 			statusClient.UserName = username
 			statusClient.Token = password
 
-			core.PrepareGetStatus(roundTripper, statusClient.URL, username, password)
+			PrepareGetStatus(roundTripper, statusClient.URL, username, password)
 
 			status, err := statusClient.Get()
 			Expect(err).To(BeNil())
