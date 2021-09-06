@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -306,6 +307,78 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 		})
 
 	})
+
+	Context("GetNodes", func() {
+		given := func(option GetNodesOption, mockResponseStatus int, mockResponseData string) {
+			api := c.getGetNodesAPI(option)
+			mockRequest, err := http.NewRequest(http.MethodGet, api, nil)
+			if err != nil {
+				return
+			}
+			mockRequest.Header.Set("Content-Type", "application/json")
+			mockResponse := &http.Response{
+				StatusCode: mockResponseStatus,
+				Proto:      "HTTP/1.1",
+				Request:    mockRequest,
+				Body:       io.NopCloser(bytes.NewBufferString(mockResponseData)),
+			}
+			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(mockRequest)).Return(mockResponse, nil)
+		}
+		It("Get Pipeline nodes detail", func() {
+			given(GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				RunID:     "123",
+			}, 200, `
+[
+  {
+    "displayName": "build",
+    "durationInMillis": 219,
+    "edges": [
+      {
+        "id": "9"
+      }
+    ],
+    "id": "3",
+    "result": "SUCCESS",
+    "startTime": "2021-09-05T15:15:08.719-0700",
+    "state": "FINISHED"
+  }
+]`)
+
+			nodes, err := c.GetNodes(GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				RunID:     "123",
+			})
+			Expect(err).Should(BeNil())
+			Expect(len(nodes)).Should(Equal(1))
+			Expect(nodes[0].ID).Should(Equal("3"))
+			Expect(nodes[0].Result).Should(Equal("SUCCESS"))
+			Expect(nodes[0].StartTime.In(time.UTC)).Should(Equal(time.Date(2021, 9, 5, 22, 15, 8, 719000000, time.UTC)))
+		})
+		It("Get Pipeline nodes detail with error", func() {
+			given(GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				RunID:     "456",
+			}, 400, `
+{
+  "message": "Failed to get pipeline run nodes detail: pipelineA/456",
+  "code": 400,
+  "errors": [
+    {
+      "message": "pipeline run ID was not exist",
+      "code": "NOT_EXISTS",
+      "field": "runID"
+    }
+  ]
+}`)
+
+			_, err := c.GetNodes(GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				RunID:     "456",
+			})
+			Expect(err).ShouldNot(BeNil())
+		})
+	})
 })
 
 func Test_getHeaders(t *testing.T) {
@@ -449,6 +522,50 @@ func TestBlueOceanClient_getGetBuildAPI(t *testing.T) {
 			}
 			if got := c.getGetBuildAPI(tt.args.option); got != tt.want {
 				t.Errorf("getGetBuildAPI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBlueOceanClient_getGetNodesAPI(t *testing.T) {
+	type args struct {
+		option GetNodesOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{{
+		name: "Option without limit",
+		args: args{
+			option: GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "main",
+				RunID:     "123",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/main/runs/123/nodes/?limit=10000",
+	}, {
+		name: "Option with limit",
+		args: args{
+			option: GetNodesOption{
+				Pipelines: []string{"pipelineA"},
+				Branch:    "main",
+				RunID:     "123",
+				Limit:     456,
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/main/runs/123/nodes/?limit=456",
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &BlueOceanClient{
+				JenkinsCore:  core.JenkinsCore{},
+				Organization: "jenkins",
+			}
+			if got := c.getGetNodesAPI(tt.args.option); got != tt.want {
+				t.Errorf("getGetNodesAPI() = %v, want %v", got, tt.want)
 			}
 		})
 	}

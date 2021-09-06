@@ -43,13 +43,6 @@ type BuildOption struct {
 	Branch     string
 }
 
-// GetBuildOption contains some options while getting a specific build.
-type GetBuildOption struct {
-	Pipelines []string
-	RunID     string
-	Branch    string
-}
-
 // Build builds a pipeline for specific organization and pipelines.
 func (c *BlueOceanClient) Build(option BuildOption) (*PipelineBuild, error) {
 	var pb PipelineBuild
@@ -69,12 +62,20 @@ func (c *BlueOceanClient) Build(option BuildOption) (*PipelineBuild, error) {
 }
 
 func (c *BlueOceanClient) getBuildAPI(option BuildOption) string {
+	// validate option
 	api := fmt.Sprintf("%s/%s/%s", organizationAPIPrefix, c.Organization, parsePipelinePath(option.Pipelines))
 	if option.Branch != "" {
 		api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(option.Branch))
 	}
 	api = fmt.Sprintf("%s/runs/", api)
 	return api
+}
+
+// GetBuildOption contains some options while getting a specific build.
+type GetBuildOption struct {
+	Pipelines []string
+	RunID     string
+	Branch    string
 }
 
 // GetBuild gets build result for specific organization, run ID and pipelines.
@@ -88,11 +89,44 @@ func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineBuild, error
 }
 
 func (c *BlueOceanClient) getGetBuildAPI(option GetBuildOption) string {
-	api := fmt.Sprintf("%s/%s/%s", organizationAPIPrefix, c.Organization, parsePipelinePath(option.Pipelines))
-	if option.Branch != "" {
-		api = fmt.Sprintf("%s/branches/%s", api, url.PathEscape(option.Branch))
+	api := c.getBuildAPI(BuildOption{
+		Pipelines: option.Pipelines,
+		Branch:    option.Branch,
+	})
+	api = api + option.RunID + "/"
+	return api
+}
+
+// GetNodesOption contains some options while getting nodes detail.
+type GetNodesOption struct {
+	Pipelines []string
+	Branch    string
+	RunID     string
+	Limit     int
+}
+
+// GetNodes gets nodes details
+func (c *BlueOceanClient) GetNodes(option GetNodesOption) ([]Node, error) {
+	var nodes []Node
+	err := c.RequestWithData(http.MethodGet, c.getGetNodesAPI(option), getHeaders(), nil, 200, &nodes)
+	if err != nil {
+		return nil, err
 	}
-	api = fmt.Sprintf("%s/runs/%s/", api, option.RunID)
+	return nodes, nil
+}
+
+func (c *BlueOceanClient) getGetNodesAPI(option GetNodesOption) string {
+	api := c.getGetBuildAPI(GetBuildOption{
+		Pipelines: option.Pipelines,
+		Branch:    option.Branch,
+		RunID:     option.RunID,
+	})
+	limit := option.Limit
+	if limit == 0 {
+		// if limit is not set
+		limit = 10000
+	}
+	api = fmt.Sprintf("%snodes/?limit=%d", api, limit)
 	return api
 }
 
@@ -104,25 +138,57 @@ func getHeaders() map[string]string {
 
 // PipelineBuild represents a build detail of Pipeline.
 type PipelineBuild struct {
-	Actions                   []interface{} `json:"actions,omitempty" description:"the list of all actions"`
-	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty" description:"the artifacts zip file"`
-	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty" description:"the cause of blockage"`
+	Actions                   []interface{} `json:"actions,omitempty"`
+	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty"`
+	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty"`
 	Causes                    []interface{} `json:"causes,omitempty"`
-	ChangeSet                 []interface{} `json:"changeSet,omitempty" description:"changeset information"`
-	Description               interface{}   `json:"description,omitempty" description:"description"`
-	DurationInMillis          interface{}   `json:"durationInMillis,omitempty" description:"duration time in millis"`
-	EnQueueTime               Time          `json:"enQueueTime,omitempty" description:"the time of enter the queue"`
-	EndTime                   Time          `json:"endTime,omitempty" description:"the time of end"`
-	EstimatedDurationInMillis interface{}   `json:"estimatedDurationInMillis,omitempty" description:"estimated duration time in millis"`
-	ID                        string        `json:"id,omitempty" description:"id"`
-	Name                      interface{}   `json:"name,omitempty" description:"name"`
-	Organization              string        `json:"organization,omitempty" description:"the name of organization"`
-	Pipeline                  string        `json:"pipeline,omitempty" description:"pipeline"`
-	Replayable                bool          `json:"replayable,omitempty" description:"replayable or not"`
-	Result                    string        `json:"result,omitempty" description:"the result of pipeline run. e.g. SUCCESS"`
-	RunSummary                interface{}   `json:"runSummary,omitempty" description:"pipeline run summary"`
-	StartTime                 Time          `json:"startTime,omitempty" description:"the time of start"`
-	State                     string        `json:"state,omitempty" description:"run state. e.g. RUNNING"`
-	Type                      string        `json:"type,omitempty" description:"type"`
-	QueueID                   string        `json:"queueId,omitempty" description:"queue id"`
+	ChangeSet                 []interface{} `json:"changeSet,omitempty"`
+	Description               interface{}   `json:"description,omitempty"`
+	DurationInMillis          interface{}   `json:"durationInMillis,omitempty"`
+	EnQueueTime               Time          `json:"enQueueTime,omitempty"`
+	EndTime                   Time          `json:"endTime,omitempty"`
+	EstimatedDurationInMillis interface{}   `json:"estimatedDurationInMillis,omitempty"`
+	ID                        string        `json:"id,omitempty"`
+	Name                      interface{}   `json:"name,omitempty"`
+	Organization              string        `json:"organization,omitempty"`
+	Pipeline                  string        `json:"pipeline,omitempty"`
+	Replayable                bool          `json:"replayable,omitempty"`
+	Result                    string        `json:"result,omitempty"`
+	RunSummary                interface{}   `json:"runSummary,omitempty"`
+	StartTime                 Time          `json:"startTime,omitempty"`
+	State                     string        `json:"state,omitempty"`
+	Type                      string        `json:"type,omitempty"`
+	QueueID                   string        `json:"queueId,omitempty"`
+}
+
+// Node represents a node detail of a PipelineRun.
+type Node struct {
+	DisplayDescription string `json:"displayDescription,omitempty"`
+	DisplayName        string `json:"displayName,omitempty"`
+	DurationInMillis   int    `json:"durationInMillis,omitempty"`
+	ID                 string `json:"id,omitempty"`
+	Input              *Input `json:"input,omitempty"`
+	Result             string `json:"result,omitempty"`
+	StartTime          Time   `json:"startTime,omitempty"`
+	State              string `json:"state,omitempty"`
+	Type               string `json:"type,omitempty"`
+	CauseOfBlockage    string `json:"causeOfBlockage,omitempty"`
+	Edges              []Edge `json:"edges,omitempty"`
+	FirstParent        string `json:"firstParent,omitempty"`
+	Restartable        bool   `json:"restartable,omitempty"`
+}
+
+// Edge represents edge of Pipeline flow graph.
+type Edge struct {
+	ID   string `json:"id,omitempty"`
+	Type string `json:"type,omitempty"`
+}
+
+// Input contains input step data.
+type Input struct {
+	ID         string                `json:"id,omitempty"`
+	Message    string                `json:"message,omitempty"`
+	Ok         string                `json:"ok,omitempty"`
+	Parameters []ParameterDefinition `json:"parameters,omitempty"`
+	Submitter  string                `json:"submitter,omitempty"`
 }
