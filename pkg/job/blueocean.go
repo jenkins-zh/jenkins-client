@@ -3,11 +3,12 @@ package job
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 )
 
 const (
@@ -137,28 +138,32 @@ func getHeaders() map[string]string {
 }
 
 // PipelineBuild represents a build detail of Pipeline.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java
 type PipelineBuild struct {
-	Actions                   []interface{} `json:"actions,omitempty"`
 	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty"`
 	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty"`
 	Causes                    []interface{} `json:"causes,omitempty"`
 	ChangeSet                 []interface{} `json:"changeSet,omitempty"`
-	Description               interface{}   `json:"description,omitempty"`
-	DurationInMillis          interface{}   `json:"durationInMillis,omitempty"`
+	Description               string        `json:"description,omitempty"`
+	DurationInMillis          *int64        `json:"durationInMillis,omitempty"`
 	EnQueueTime               Time          `json:"enQueueTime,omitempty"`
 	EndTime                   Time          `json:"endTime,omitempty"`
-	EstimatedDurationInMillis interface{}   `json:"estimatedDurationInMillis,omitempty"`
+	EstimatedDurationInMillis *int64        `json:"estimatedDurationInMillis,omitempty"`
 	ID                        string        `json:"id,omitempty"`
-	Name                      interface{}   `json:"name,omitempty"`
+	Name                      string        `json:"name,omitempty"`
 	Organization              string        `json:"organization,omitempty"`
 	Pipeline                  string        `json:"pipeline,omitempty"`
 	Replayable                bool          `json:"replayable,omitempty"`
 	Result                    string        `json:"result,omitempty"`
-	RunSummary                interface{}   `json:"runSummary,omitempty"`
+	RunSummary                string        `json:"runSummary,omitempty"`
 	StartTime                 Time          `json:"startTime,omitempty"`
 	State                     string        `json:"state,omitempty"`
 	Type                      string        `json:"type,omitempty"`
 	QueueID                   string        `json:"queueId,omitempty"`
+	CommitID                  string        `json:"commitId,omitempty"`
+	CommitURL                 string        `json:"commitUrl,omitempty"`
+	PullRequest               interface{}   `json:"pullRequest,omitempty"`
+	Branch                    interface{}   `json:"branch,omitempty"`
 }
 
 // Node represents a node detail of a PipelineRun.
