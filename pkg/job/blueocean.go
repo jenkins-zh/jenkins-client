@@ -54,7 +54,7 @@ type BuildOption struct {
 
 // Build builds a pipeline for specific organization and pipelines.
 func (c *BlueOceanClient) Build(option BuildOption) (*PipelineRun, error) {
-	var pb PipelineRun
+	var pr PipelineRun
 	var payloadReader io.Reader
 	if len(option.Parameters) > 0 {
 		// ignore this error due to never happened
@@ -63,11 +63,11 @@ func (c *BlueOceanClient) Build(option BuildOption) (*PipelineRun, error) {
 		})
 		payloadReader = strings.NewReader(string(payloadBytes))
 	}
-	err := c.RequestWithData(http.MethodPost, c.getBuildAPI(option), getHeaders(), payloadReader, 200, &pb)
+	err := c.RequestWithData(http.MethodPost, c.getBuildAPI(option), getHeaders(), payloadReader, 200, &pr)
 	if err != nil {
 		return nil, err
 	}
-	return &pb, nil
+	return &pr, nil
 }
 
 func (c *BlueOceanClient) getBuildAPI(option BuildOption) string {
@@ -89,12 +89,12 @@ type GetBuildOption struct {
 
 // GetBuild gets build result for specific organization, run ID and pipelines.
 func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineRun, error) {
-	var pb PipelineRun
-	err := c.RequestWithData(http.MethodGet, c.getGetBuildAPI(option), getHeaders(), nil, 200, &pb)
+	var pr PipelineRun
+	err := c.RequestWithData(http.MethodGet, c.getGetBuildAPI(option), getHeaders(), nil, 200, &pr)
 	if err != nil {
 		return nil, err
 	}
-	return &pb, nil
+	return &pr, nil
 }
 
 func (c *BlueOceanClient) getPipelineAPI(folders ...string) (api string) {
