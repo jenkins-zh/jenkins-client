@@ -53,8 +53,8 @@ type BuildOption struct {
 }
 
 // Build builds a pipeline for specific organization and pipelines.
-func (c *BlueOceanClient) Build(option BuildOption) (*PipelineBuild, error) {
-	var pb PipelineBuild
+func (c *BlueOceanClient) Build(option BuildOption) (*PipelineRun, error) {
+	var pb PipelineRun
 	var payloadReader io.Reader
 	if len(option.Parameters) > 0 {
 		// ignore this error due to never happened
@@ -88,29 +88,13 @@ type GetBuildOption struct {
 }
 
 // GetBuild gets build result for specific organization, run ID and pipelines.
-func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineBuild, error) {
-	var pb PipelineBuild
+func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineRun, error) {
+	var pb PipelineRun
 	err := c.RequestWithData(http.MethodGet, c.getGetBuildAPI(option), getHeaders(), nil, 200, &pb)
 	if err != nil {
 		return nil, err
 	}
 	return &pb, nil
-}
-
-// PipelineRun represents a PipelineRun of Jenkins BlueOcean
-type PipelineRun struct {
-	CommitID     string `json:"commitId"`
-	CommitURL    string `json:"commitUrl"`
-	Description  string `json:"description"`
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	Organization string `json:"organization"`
-	Pipeline     string `json:"pipeline"`
-	Replayable   bool   `json:"replayable"`
-	Result       string `json:"result"`
-	RunSummary   string `json:"runSummary"`
-	State        string `json:"state"`
-	Type         string `json:"type"`
 }
 
 func (c *BlueOceanClient) getPipelineAPI(folders ...string) (api string) {
@@ -178,9 +162,9 @@ func getHeaders() map[string]string {
 	}
 }
 
-// PipelineBuild represents a build detail of Pipeline.
+// PipelineRun represents a build detail of Pipeline.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java
-type PipelineBuild struct {
+type PipelineRun struct {
 	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty"`
 	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty"`
 	Causes                    []interface{} `json:"causes,omitempty"`
