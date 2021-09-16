@@ -214,7 +214,7 @@ func (q *Client) GetJob(name string) (job *Job, err error) {
 	return
 }
 
-// AddParameters add parameters to a Pipeline
+// AddParameters add parameters to a SimplePipeline
 func (q *Client) AddParameters(name, parameters string) (err error) {
 	path := ParseJobPath(name)
 	api := fmt.Sprintf("%s/restFul/addParameter", path)
@@ -227,7 +227,7 @@ func (q *Client) AddParameters(name, parameters string) (err error) {
 	return
 }
 
-// RemoveParameters add parameters to a Pipeline
+// RemoveParameters add parameters to a SimplePipeline
 func (q *Client) RemoveParameters(name, parameters string) (err error) {
 	path := ParseJobPath(name)
 	api := fmt.Sprintf("%s/restFul/removeParameter?params=%s", path, parameters)
@@ -259,7 +259,7 @@ func (q *Client) GetJobTypeCategories() (jobCategories []Category, err error) {
 }
 
 // GetPipeline return the pipeline object
-func (q *Client) GetPipeline(name string) (pipeline *Pipeline, err error) {
+func (q *Client) GetPipeline(name string) (pipeline *SimplePipeline, err error) {
 	path := ParseJobPath(name)
 	api := fmt.Sprintf("%s/restFul", path)
 	err = q.RequestWithData("GET", api, nil, nil, 200, &pipeline)
@@ -562,8 +562,8 @@ type Build struct {
 	NextBuild         SimpleJobBuild
 }
 
-// Pipeline represents a pipeline
-type Pipeline struct {
+// SimplePipeline represents a pipeline
+type SimplePipeline struct {
 	Script  string
 	Sandbox bool
 }

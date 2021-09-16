@@ -28,6 +28,14 @@ type Parameter struct {
 	Value string `json:"value"`
 }
 
+// GetPipelines returns the Pipeline list which comes from the possible nest folders
+func (c *BlueOceanClient) GetPipelines(folders ...string) (pipelines []Pipeline, err error) {
+	api := c.getPipelineAPI(folders...)
+	err = c.RequestWithData(http.MethodGet, api,
+		nil, nil, 200, &pipelines)
+	return
+}
+
 // Search searches jobs via the BlueOcean API
 func (c *BlueOceanClient) Search(name string, start, limit int) (items []JenkinsItem, err error) {
 	api := fmt.Sprintf("%s/?q=pipeline:*%s*;type:pipeline;organization:%s;excludedFromFlattening=jenkins.branch.MultiBranchProject,com.cloudbees.hudson.plugins.folder.AbstractFolder&filter=no-folders&start=%d&limit=%d",
@@ -87,6 +95,39 @@ func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineBuild, error
 		return nil, err
 	}
 	return &pb, nil
+}
+
+// PipelineRun represents a PipelineRun of Jenkins BlueOcean
+type PipelineRun struct {
+	CommitID     string `json:"commitId"`
+	CommitURL    string `json:"commitUrl"`
+	Description  string `json:"description"`
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Organization string `json:"organization"`
+	Pipeline     string `json:"pipeline"`
+	Replayable   bool   `json:"replayable"`
+	Result       string `json:"result"`
+	RunSummary   string `json:"runSummary"`
+	State        string `json:"state"`
+	Type         string `json:"type"`
+}
+
+func (c *BlueOceanClient) getPipelineAPI(folders ...string) (api string) {
+	api = fmt.Sprintf("%s/%s/pipelines", organizationAPIPrefix, c.Organization)
+	for _, folder := range folders {
+		api = fmt.Sprintf("%s/%s/pipelines/", api, folder)
+	}
+	return
+}
+
+// GetPipelineRuns returns a PipelineRun which in the possible nest folders
+func (c *BlueOceanClient) GetPipelineRuns(pipeline string, folders ...string) (runs []PipelineRun, err error) {
+	api := c.getPipelineAPI(folders...)
+	api = fmt.Sprintf("%s/%s/runs/", api, pipeline)
+	err = c.RequestWithData(http.MethodGet, api,
+		nil, nil, 200, &runs)
+	return
 }
 
 func (c *BlueOceanClient) getGetBuildAPI(option GetBuildOption) string {
@@ -183,7 +224,7 @@ type Node struct {
 	Restartable        bool   `json:"restartable,omitempty"`
 }
 
-// Edge represents edge of Pipeline flow graph.
+// Edge represents edge of SimplePipeline flow graph.
 type Edge struct {
 	ID   string `json:"id,omitempty"`
 	Type string `json:"type,omitempty"`
@@ -196,4 +237,12 @@ type Input struct {
 	Ok         string                `json:"ok,omitempty"`
 	Parameters []ParameterDefinition `json:"parameters,omitempty"`
 	Submitter  string                `json:"submitter,omitempty"`
+}
+
+// Pipeline represents a Jenkins BlueOcean Pipeline data
+type Pipeline struct {
+	Name         string
+	Disabled     bool
+	DisplayName  string
+	WeatherScore int
 }
