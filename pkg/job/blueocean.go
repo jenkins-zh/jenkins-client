@@ -28,6 +28,14 @@ type Parameter struct {
 	Value string `json:"value"`
 }
 
+// GetPipelines returns the Pipeline list which comes from the possible nest folders
+func (c *BlueOceanClient) GetPipelines(folders ...string) (pipelines []Pipeline, err error) {
+	api := c.getPipelineAPI(folders...)
+	err = c.RequestWithData(http.MethodGet, api,
+		nil, nil, 200, &pipelines)
+	return
+}
+
 // Search searches jobs via the BlueOcean API
 func (c *BlueOceanClient) Search(name string, start, limit int) (items []JenkinsItem, err error) {
 	api := fmt.Sprintf("%s/?q=pipeline:*%s*;type:pipeline;organization:%s;excludedFromFlattening=jenkins.branch.MultiBranchProject,com.cloudbees.hudson.plugins.folder.AbstractFolder&filter=no-folders&start=%d&limit=%d",
@@ -45,8 +53,8 @@ type BuildOption struct {
 }
 
 // Build builds a pipeline for specific organization and pipelines.
-func (c *BlueOceanClient) Build(option BuildOption) (*PipelineBuild, error) {
-	var pb PipelineBuild
+func (c *BlueOceanClient) Build(option BuildOption) (*PipelineRun, error) {
+	var pr PipelineRun
 	var payloadReader io.Reader
 	if len(option.Parameters) > 0 {
 		// ignore this error due to never happened
@@ -55,11 +63,11 @@ func (c *BlueOceanClient) Build(option BuildOption) (*PipelineBuild, error) {
 		})
 		payloadReader = strings.NewReader(string(payloadBytes))
 	}
-	err := c.RequestWithData(http.MethodPost, c.getBuildAPI(option), getHeaders(), payloadReader, 200, &pb)
+	err := c.RequestWithData(http.MethodPost, c.getBuildAPI(option), getHeaders(), payloadReader, 200, &pr)
 	if err != nil {
 		return nil, err
 	}
-	return &pb, nil
+	return &pr, nil
 }
 
 func (c *BlueOceanClient) getBuildAPI(option BuildOption) string {
@@ -80,13 +88,30 @@ type GetBuildOption struct {
 }
 
 // GetBuild gets build result for specific organization, run ID and pipelines.
-func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineBuild, error) {
-	var pb PipelineBuild
-	err := c.RequestWithData(http.MethodGet, c.getGetBuildAPI(option), getHeaders(), nil, 200, &pb)
+func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineRun, error) {
+	var pr PipelineRun
+	err := c.RequestWithData(http.MethodGet, c.getGetBuildAPI(option), getHeaders(), nil, 200, &pr)
 	if err != nil {
 		return nil, err
 	}
-	return &pb, nil
+	return &pr, nil
+}
+
+func (c *BlueOceanClient) getPipelineAPI(folders ...string) (api string) {
+	api = fmt.Sprintf("%s/%s/pipelines", organizationAPIPrefix, c.Organization)
+	for _, folder := range folders {
+		api = fmt.Sprintf("%s/%s/pipelines/", api, folder)
+	}
+	return
+}
+
+// GetPipelineRuns returns a PipelineRun which in the possible nest folders
+func (c *BlueOceanClient) GetPipelineRuns(pipeline string, folders ...string) (runs []PipelineRun, err error) {
+	api := c.getPipelineAPI(folders...)
+	api = fmt.Sprintf("%s/%s/runs/", api, pipeline)
+	err = c.RequestWithData(http.MethodGet, api,
+		nil, nil, 200, &runs)
+	return
 }
 
 func (c *BlueOceanClient) getGetBuildAPI(option GetBuildOption) string {
@@ -137,9 +162,9 @@ func getHeaders() map[string]string {
 	}
 }
 
-// PipelineBuild represents a build detail of Pipeline.
+// PipelineRun represents a build detail of Pipeline.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java
-type PipelineBuild struct {
+type PipelineRun struct {
 	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty"`
 	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty"`
 	Causes                    []interface{} `json:"causes,omitempty"`
@@ -183,7 +208,7 @@ type Node struct {
 	Restartable        bool   `json:"restartable,omitempty"`
 }
 
-// Edge represents edge of Pipeline flow graph.
+// Edge represents edge of SimplePipeline flow graph.
 type Edge struct {
 	ID   string `json:"id,omitempty"`
 	Type string `json:"type,omitempty"`
@@ -196,4 +221,12 @@ type Input struct {
 	Ok         string                `json:"ok,omitempty"`
 	Parameters []ParameterDefinition `json:"parameters,omitempty"`
 	Submitter  string                `json:"submitter,omitempty"`
+}
+
+// Pipeline represents a Jenkins BlueOcean Pipeline data
+type Pipeline struct {
+	Name         string
+	Disabled     bool
+	DisplayName  string
+	WeatherScore int
 }

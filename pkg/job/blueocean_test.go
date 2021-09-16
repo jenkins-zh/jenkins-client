@@ -2,6 +2,8 @@ package job
 
 import (
 	"bytes"
+	// Enable go embed
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/mock/gomock"
@@ -19,7 +21,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
+//go:embed testdata/PipelineRuns.json
+var pipelineRunsDataSample string
+
+var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 	var (
 		ctrl         *gomock.Controller
 		c            BlueOceanClient
@@ -127,7 +132,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(requestCrumb).WithQuery().WithBody()).Return(responseCrumb, nil)
 		}
 
-		It("Trigger a simple Pipeline via Blue Ocean REST API", func() {
+		It("Trigger a simple SimplePipeline via Blue Ocean REST API", func() {
 			const pipelineName = "fakePipeline"
 			given(pipelineName, "", 200, nil, func(response *http.Response) {
 				response.Body = io.NopCloser(strings.NewReader(`
@@ -146,7 +151,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			Expect(pipelineBuild.ID).Should(Equal("3"))
 		})
 
-		It("Trigger a simple Pipeline with parameters", func() {
+		It("Trigger a simple SimplePipeline with parameters", func() {
 			const pipelineName = "fakePipeline"
 			var parameters = []Parameter{{
 				Name:  "this_is_a_name",
@@ -179,7 +184,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			Expect(pipelineBuild.ID).Should(Equal("3"))
 		})
 
-		It("Trigger a simple Pipeline via Blue Ocean REST API with an error", func() {
+		It("Trigger a simple SimplePipeline via Blue Ocean REST API with an error", func() {
 			const pipelineName = "fakePipeline"
 			given(pipelineName, "", 400, nil, func(response *http.Response) {
 				response.Body = io.NopCloser(strings.NewReader(`
@@ -196,7 +201,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			Expect(err).NotTo(BeNil())
 		})
 
-		It("Trigger a multi branch Pipeline", func() {
+		It("Trigger a multi branch SimplePipeline", func() {
 			const (
 				pipelineName = "fakePipeline"
 				branch       = "feature-1"
@@ -238,7 +243,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			}
 			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
 		}
-		It("Get specific Pipeline run", func() {
+		It("Get specific SimplePipeline run", func() {
 			const (
 				pipelineName = "fakePipeline"
 				runID        = "1"
@@ -260,7 +265,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			Expect(err).Should(BeNil())
 			Expect(pipelineBuild).ShouldNot(BeNil())
 		})
-		It("Get specific Pipeline run with an error", func() {
+		It("Get specific SimplePipeline run with an error", func() {
 			const (
 				pipelineName = "fakePipeline"
 				runID        = "1"
@@ -281,7 +286,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			})
 			Expect(err).ShouldNot(BeNil())
 		})
-		It("Get multi branch Pipeline run", func() {
+		It("Get multi branch SimplePipeline run", func() {
 			const (
 				pipelineName = "fakePipeline"
 				runID        = "1"
@@ -324,7 +329,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			}
 			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(mockRequest)).Return(mockResponse, nil)
 		}
-		It("Get Pipeline nodes detail", func() {
+		It("Get SimplePipeline nodes detail", func() {
 			given(GetNodesOption{
 				Pipelines: []string{"pipelineA"},
 				RunID:     "123",
@@ -355,7 +360,7 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 			Expect(nodes[0].Result).Should(Equal("SUCCESS"))
 			Expect(nodes[0].StartTime.In(time.UTC)).Should(Equal(time.Date(2021, 9, 5, 22, 15, 8, 719000000, time.UTC)))
 		})
-		It("Get Pipeline nodes detail with error", func() {
+		It("Get SimplePipeline nodes detail with error", func() {
 			given(GetNodesOption{
 				Pipelines: []string{"pipelineA"},
 				RunID:     "456",
@@ -377,6 +382,97 @@ var _ = Describe("Pipeline test via BlueOcean RESTful API", func() {
 				RunID:     "456",
 			})
 			Expect(err).ShouldNot(BeNil())
+		})
+	})
+
+	Context("GetPipelines", func() {
+		It("Without folders, and without data", func() {
+			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines", nil)
+			response := &http.Response{
+				StatusCode: http.StatusOK,
+				Body: io.NopCloser(bytes.NewBufferString("[]")),
+			}
+			roundTripper.EXPECT().
+				RoundTrip(core.NewRequestMatcher(request)).
+				Return(response, nil)
+
+			pipelines, err := c.GetPipelines()
+			Expect(err).To(BeNil())
+			Expect(len(pipelines)).To(Equal(0))
+		})
+
+		It("Without folders, with one pipeline", func() {
+			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines", nil)
+			response := &http.Response{
+				StatusCode: http.StatusOK,
+				Body: io.NopCloser(bytes.NewBufferString(`[{"_class":"io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl","_links":{"self":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/"},"scm":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/scm/"},"actions":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/actions/"},"runs":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/runs/"},"trends":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/trends/"},"queue":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/queue/"}},"actions":[],"disabled":false,"displayName":"sd","estimatedDurationInMillis":-1,"fullDisplayName":"sd","fullName":"sd","latestRun":null,"name":"sd","organization":"jenkins","parameters":[],"permissions":{"create":true,"configure":true,"read":true,"start":true,"stop":true},"weatherScore":100}]`)),
+			}
+			roundTripper.EXPECT().
+				RoundTrip(core.NewRequestMatcher(request)).
+				Return(response, nil)
+
+			pipelines, err := c.GetPipelines()
+			Expect(err).To(BeNil())
+			Expect(len(pipelines)).To(Equal(1))
+			Expect(pipelines[0].Name).To(Equal("sd"))
+		})
+
+		It("Without one folder, with one pipeline", func() {
+			name := "test"
+			folder := "folder"
+			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines/folder/pipelines/", nil)
+			response := &http.Response{
+				StatusCode: http.StatusOK,
+				Body: io.NopCloser(bytes.NewBufferString(`[{"_class":"io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl","_links":{"self":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/"},"scm":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/scm/"},"actions":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/actions/"},"runs":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/runs/"},"trends":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/trends/"},"queue":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/queue/"}},"actions":[],"disabled":false,"displayName":"test","estimatedDurationInMillis":-1,"fullDisplayName":"folder/test","fullName":"folder/test","latestRun":null,"name":"test","organization":"jenkins","parameters":[],"permissions":{"create":true,"configure":true,"read":true,"start":true,"stop":true},"weatherScore":100}]`)),
+			}
+			roundTripper.EXPECT().
+				RoundTrip(core.NewRequestMatcher(request)).
+				Return(response, nil)
+
+			pipelines, err := c.GetPipelines(folder)
+			Expect(err).To(BeNil())
+			Expect(len(pipelines)).To(Equal(1))
+			Expect(pipelines[0].Name).To(Equal(name))
+		})
+
+		It("Without two folders, with one pipeline", func() {
+			name := "test"
+			folder1 := "folder1"
+			folder2 := "folder2"
+			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/folder2/pipelines/", nil)
+			response := &http.Response{
+				StatusCode: http.StatusOK,
+				Body: io.NopCloser(bytes.NewBufferString(`[{"_class":"io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl","_links":{"self":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/"},"scm":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/scm/"},"actions":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/actions/"},"runs":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/runs/"},"trends":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/trends/"},"queue":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/queue/"}},"actions":[],"disabled":false,"displayName":"test","estimatedDurationInMillis":-1,"fullDisplayName":"folder/test","fullName":"folder/test","latestRun":null,"name":"test","organization":"jenkins","parameters":[],"permissions":{"create":true,"configure":true,"read":true,"start":true,"stop":true},"weatherScore":100}]`)),
+			}
+			roundTripper.EXPECT().
+				RoundTrip(core.NewRequestMatcher(request)).
+				Return(response, nil)
+
+			pipelines, err := c.GetPipelines(folder1, folder2)
+			Expect(err).To(BeNil())
+			Expect(len(pipelines)).To(Equal(1))
+			Expect(pipelines[0].Name).To(Equal(name))
+		})
+	})
+
+	Context("GetPipelineRun", func() {
+		It("Without two folders, with one pipeline", func() {
+			name := "test"
+			folder1 := "folder1"
+			folder2 := "folder2"
+			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/folder2/pipelines/test/runs/", nil)
+			response := &http.Response{
+				StatusCode: http.StatusOK,
+				Body: io.NopCloser(bytes.NewBufferString(pipelineRunsDataSample)),
+			}
+			roundTripper.EXPECT().
+				RoundTrip(core.NewRequestMatcher(request)).
+				Return(response, nil)
+
+			pipelines, err := c.GetPipelineRuns(name, folder1, folder2)
+			Expect(err).To(BeNil())
+			Expect(len(pipelines)).To(Equal(1))
+			Expect(pipelines[0].Result).To(Equal("SUCCESS"))
 		})
 	})
 })
