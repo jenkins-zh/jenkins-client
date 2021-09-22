@@ -56,7 +56,8 @@ type BuildOption struct {
 func (c *BlueOceanClient) Build(option BuildOption) (*PipelineRun, error) {
 	var pr PipelineRun
 	var payloadReader io.Reader
-	if len(option.Parameters) > 0 {
+	// we allow developers to pass an empty parameters, but nil parameters
+	if option.Parameters != nil {
 		// ignore this error due to never happened
 		payloadBytes, _ := json.Marshal(map[string][]Parameter{
 			"parameters": option.Parameters,
