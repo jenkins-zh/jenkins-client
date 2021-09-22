@@ -2,13 +2,9 @@ package job
 
 import (
 	"bytes"
-	// Enable go embed
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/mock/gomock"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
-	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +13,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
+	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -390,7 +389,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines", nil)
 			response := &http.Response{
 				StatusCode: http.StatusOK,
-				Body: io.NopCloser(bytes.NewBufferString("[]")),
+				Body:       io.NopCloser(bytes.NewBufferString("[]")),
 			}
 			roundTripper.EXPECT().
 				RoundTrip(core.NewRequestMatcher(request)).
@@ -405,7 +404,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines", nil)
 			response := &http.Response{
 				StatusCode: http.StatusOK,
-				Body: io.NopCloser(bytes.NewBufferString(`[{"_class":"io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl","_links":{"self":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/"},"scm":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/scm/"},"actions":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/actions/"},"runs":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/runs/"},"trends":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/trends/"},"queue":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/queue/"}},"actions":[],"disabled":false,"displayName":"sd","estimatedDurationInMillis":-1,"fullDisplayName":"sd","fullName":"sd","latestRun":null,"name":"sd","organization":"jenkins","parameters":[],"permissions":{"create":true,"configure":true,"read":true,"start":true,"stop":true},"weatherScore":100}]`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`[{"_class":"io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl","_links":{"self":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/"},"scm":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/scm/"},"actions":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/actions/"},"runs":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/runs/"},"trends":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/trends/"},"queue":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/sd/queue/"}},"actions":[],"disabled":false,"displayName":"sd","estimatedDurationInMillis":-1,"fullDisplayName":"sd","fullName":"sd","latestRun":null,"name":"sd","organization":"jenkins","parameters":[],"permissions":{"create":true,"configure":true,"read":true,"start":true,"stop":true},"weatherScore":100}]`)),
 			}
 			roundTripper.EXPECT().
 				RoundTrip(core.NewRequestMatcher(request)).
@@ -423,7 +422,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines/folder/pipelines/", nil)
 			response := &http.Response{
 				StatusCode: http.StatusOK,
-				Body: io.NopCloser(bytes.NewBufferString(`[{"_class":"io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl","_links":{"self":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/"},"scm":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/scm/"},"actions":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/actions/"},"runs":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/runs/"},"trends":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/trends/"},"queue":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/queue/"}},"actions":[],"disabled":false,"displayName":"test","estimatedDurationInMillis":-1,"fullDisplayName":"folder/test","fullName":"folder/test","latestRun":null,"name":"test","organization":"jenkins","parameters":[],"permissions":{"create":true,"configure":true,"read":true,"start":true,"stop":true},"weatherScore":100}]`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`[{"_class":"io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl","_links":{"self":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/"},"scm":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/scm/"},"actions":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/actions/"},"runs":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/runs/"},"trends":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/trends/"},"queue":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/queue/"}},"actions":[],"disabled":false,"displayName":"test","estimatedDurationInMillis":-1,"fullDisplayName":"folder/test","fullName":"folder/test","latestRun":null,"name":"test","organization":"jenkins","parameters":[],"permissions":{"create":true,"configure":true,"read":true,"start":true,"stop":true},"weatherScore":100}]`)),
 			}
 			roundTripper.EXPECT().
 				RoundTrip(core.NewRequestMatcher(request)).
@@ -442,7 +441,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/folder2/pipelines/", nil)
 			response := &http.Response{
 				StatusCode: http.StatusOK,
-				Body: io.NopCloser(bytes.NewBufferString(`[{"_class":"io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl","_links":{"self":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/"},"scm":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/scm/"},"actions":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/actions/"},"runs":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/runs/"},"trends":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/trends/"},"queue":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/queue/"}},"actions":[],"disabled":false,"displayName":"test","estimatedDurationInMillis":-1,"fullDisplayName":"folder/test","fullName":"folder/test","latestRun":null,"name":"test","organization":"jenkins","parameters":[],"permissions":{"create":true,"configure":true,"read":true,"start":true,"stop":true},"weatherScore":100}]`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`[{"_class":"io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl","_links":{"self":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/"},"scm":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/scm/"},"actions":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/actions/"},"runs":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/runs/"},"trends":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/trends/"},"queue":{"_class":"io.jenkins.blueocean.rest.hal.Link","href":"/blue/rest/organizations/jenkins/pipelines/folder/pipelines/test/queue/"}},"actions":[],"disabled":false,"displayName":"test","estimatedDurationInMillis":-1,"fullDisplayName":"folder/test","fullName":"folder/test","latestRun":null,"name":"test","organization":"jenkins","parameters":[],"permissions":{"create":true,"configure":true,"read":true,"start":true,"stop":true},"weatherScore":100}]`)),
 			}
 			roundTripper.EXPECT().
 				RoundTrip(core.NewRequestMatcher(request)).
@@ -463,7 +462,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			request, _ := http.NewRequest(http.MethodGet, "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/folder2/pipelines/test/runs/", nil)
 			response := &http.Response{
 				StatusCode: http.StatusOK,
-				Body: io.NopCloser(bytes.NewBufferString(pipelineRunsDataSample)),
+				Body:       io.NopCloser(bytes.NewBufferString(pipelineRunsDataSample)),
 			}
 			roundTripper.EXPECT().
 				RoundTrip(core.NewRequestMatcher(request)).
@@ -662,6 +661,56 @@ func TestBlueOceanClient_getGetNodesAPI(t *testing.T) {
 			}
 			if got := c.getGetNodesAPI(tt.args.option); got != tt.want {
 				t.Errorf("getGetNodesAPI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBlueOceanClient_getReplayAPI(t *testing.T) {
+	type args struct {
+		option *ReplayOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{{
+		name: "Multi-branch PipelineRun replay",
+		args: args{
+			option: &ReplayOption{
+				Folders: []string{"pipelineA"},
+				Branch:  "main",
+				RunID:   "123",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/main/runs/123/replay/",
+	}, {
+		name: "Normal PipelineRun replay",
+		args: args{
+			option: &ReplayOption{
+				Folders: []string{"pipelineA"},
+				RunID:   "123",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/replay/",
+	}, {
+		name: "Multi-folder PipelineRun replay",
+		args: args{
+			option: &ReplayOption{
+				Folders: []string{"folderA", "pipelineA"},
+				RunID:   "123",
+			},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/folderA/pipelines/pipelineA/runs/123/replay/",
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &BlueOceanClient{
+				JenkinsCore:  core.JenkinsCore{},
+				Organization: "jenkins",
+			}
+			if got := c.getReplayAPI(tt.args.option); got != tt.want {
+				t.Errorf("BlueOceanClient.getReplayAPI() = %v, want %v", got, tt.want)
 			}
 		})
 	}
