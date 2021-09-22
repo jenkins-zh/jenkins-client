@@ -31,15 +31,17 @@ help: ## Display this help.
 
 ##@ Development
 
-fmt: ## Run go fmt against code.
-	go fmt ./...
+GOIMPORTS=$(shell pwd)/bin/goimports
+fmt: ## Run goimports against code.
+	$(call go-get-tool,$(GOIMPORTS),golang.org/x/tools/cmd/goimports@latest)
+	$(GOIMPORTS) -w .
 
 vet: ## Run go vet against code.
 	go vet ./...
 
 GOLANGCI_LINT = $(shell pwd)/bin/golangci-lint
 lint: ## Run golangci-lint against codes.
-	$(call go-get-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint@v1.41.1)
+	$(call go-get-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1)
 	$(GOLANGCI_LINT) run
 
 test: fmt vet ## Run tests.
