@@ -1,8 +1,9 @@
 package casc
 
 import (
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"net/http"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 )
 
 // Manager is the client of configuration as code

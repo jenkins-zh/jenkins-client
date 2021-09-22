@@ -3,11 +3,12 @@ package user
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/util"
 

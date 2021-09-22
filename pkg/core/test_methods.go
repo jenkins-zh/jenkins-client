@@ -3,13 +3,14 @@ package core
 import (
 	"bytes"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"path/filepath"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 )
 
 // PrepareForEmptyAvaiablePluginList only for test

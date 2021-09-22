@@ -3,7 +3,6 @@ package plugin
 import (
 	"bytes"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 )

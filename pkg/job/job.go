@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
-	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -15,6 +13,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
+	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 
 	"go.uber.org/zap"
 	"moul.io/http2curl"

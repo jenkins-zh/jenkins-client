@@ -2,8 +2,9 @@ package queue
 
 import (
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"net/http"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 )
 
 // Client is the client of queue

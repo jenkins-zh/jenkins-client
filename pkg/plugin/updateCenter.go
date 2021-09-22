@@ -2,10 +2,11 @@ package plugin
 
 import (
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 )

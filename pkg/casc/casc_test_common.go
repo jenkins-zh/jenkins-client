@@ -2,8 +2,9 @@ package casc
 
 import (
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"net/http"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 )

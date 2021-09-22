@@ -2,9 +2,10 @@ package artifact
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"github.com/jenkins-zh/jenkins-client/pkg/job"
-	"net/http"
 )
 
 // Artifact represents the artifacts from Jenkins build

@@ -3,12 +3,13 @@ package job
 import (
 	"bytes"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 
