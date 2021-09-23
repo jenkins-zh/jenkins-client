@@ -16,6 +16,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -156,6 +157,59 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 				Name:  "this_is_a_name",
 				Value: "this_is_a_value",
 			}}
+			paramBytes, err := json.Marshal(map[string][]Parameter{
+				"parameters": parameters,
+			})
+			Expect(err).To(BeNil())
+
+			given(pipelineName, "", 200, func(request *http.Request) {
+				request.Body = io.NopCloser(strings.NewReader(string(paramBytes)))
+			}, func(response *http.Response) {
+				response.Body = io.NopCloser(strings.NewReader(`
+{
+ "expectedBuildNumber" : 1,
+ "id" : "3",
+ "enQueueTime": null
+}`))
+			})
+
+			pipelineBuild, err := c.Build(BuildOption{
+				Pipelines:  []string{pipelineName},
+				Parameters: parameters,
+			})
+
+			Expect(err).To(BeNil())
+			Expect(pipelineBuild).NotTo(BeNil())
+			Expect(pipelineBuild.EnQueueTime.IsZero()).Should(BeTrue())
+			Expect(pipelineBuild.ID).Should(Equal("3"))
+		})
+
+		It("Trigger a simple SimplePipeline with nil parameters", func() {
+			const pipelineName = "fakePipeline"
+			given(pipelineName, "", 200, func(request *http.Request) {
+			}, func(response *http.Response) {
+				response.Body = io.NopCloser(strings.NewReader(`
+{
+ "expectedBuildNumber" : 1,
+ "id" : "3",
+ "enQueueTime": null
+}`))
+			})
+
+			pipelineBuild, err := c.Build(BuildOption{
+				Pipelines:  []string{pipelineName},
+				Parameters: nil,
+			})
+
+			Expect(err).To(BeNil())
+			Expect(pipelineBuild).NotTo(BeNil())
+			Expect(pipelineBuild.EnQueueTime.IsZero()).Should(BeTrue())
+			Expect(pipelineBuild.ID).Should(Equal("3"))
+		})
+
+		It("Trigger a simple SimplePipeline with empty parameters", func() {
+			const pipelineName = "fakePipeline"
+			var parameters = []Parameter{}
 			paramBytes, err := json.Marshal(map[string][]Parameter{
 				"parameters": parameters,
 			})

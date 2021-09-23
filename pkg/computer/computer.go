@@ -3,12 +3,13 @@ package computer
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"runtime"
 	"strings"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 )

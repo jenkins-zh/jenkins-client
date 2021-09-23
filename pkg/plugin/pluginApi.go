@@ -4,12 +4,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
 	"strings"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/util"
 

@@ -1,8 +1,9 @@
 package job
 
 import (
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"net/http"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 )
 
 // AgentLabel represents the label of Jenkins agent

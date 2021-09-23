@@ -3,11 +3,12 @@ package user
 import (
 	"bytes"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
