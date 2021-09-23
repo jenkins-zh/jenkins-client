@@ -3,9 +3,10 @@ package plugin
 import (
 	"bytes"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 

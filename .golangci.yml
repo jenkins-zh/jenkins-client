@@ -13,3 +13,4 @@ run:
 linters:
   enable:
     - revive # replacement for golint
+    - goimports

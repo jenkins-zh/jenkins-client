@@ -3,10 +3,11 @@ package credential
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
 	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 	"go.uber.org/zap"
