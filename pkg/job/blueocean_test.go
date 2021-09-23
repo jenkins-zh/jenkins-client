@@ -528,6 +528,77 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			Expect(pipelines[0].Result).To(Equal("SUCCESS"))
 		})
 	})
+
+	Context("Replay", func() {
+		given := func(option *ReplayOption, mockResponseStatus int, mockResponseData string) {
+			api := c.getReplayAPI(option)
+			mockRequest, _ := http.NewRequest(http.MethodPost, api, nil)
+			mockRequest.Header.Set("Content-Type", "application/json")
+			mockRequest.Header.Add("CrumbRequestField", "Crumb")
+			mockResponse := &http.Response{
+				StatusCode: mockResponseStatus,
+				Proto:      "HTTP/1.1",
+				Request:    mockRequest,
+				Body:       io.NopCloser(bytes.NewBufferString(mockResponseData)),
+			}
+			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(mockRequest).WithQuery().WithBody()).Return(mockResponse, nil)
+
+			requestCrumb, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", c.URL, "/crumbIssuer/api/json"), nil)
+			responseCrumb := &http.Response{
+				StatusCode: 200,
+				Proto:      "HTTP/1.1",
+				Request:    requestCrumb,
+				Body:       ioutil.NopCloser(bytes.NewBufferString(`{"crumbRequestField":"CrumbRequestField","crumb":"Crumb"}`)),
+			}
+			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(requestCrumb).WithQuery().WithBody()).Return(responseCrumb, nil)
+		}
+		It("Replay PipelineRun", func() {
+			given(&ReplayOption{
+				Folders: []string{"pipelineA"},
+				Branch:  "bug/ux-334",
+				RunID:   "123",
+			}, 200, `
+{
+  "_class" : "io.jenkins.blueocean.service.embedded.rest.QueueItemImpl",
+  "id" : "64",
+  "expectedBuildNumber" : 10,
+  "pipeline" : "bug%2FUX-334",
+  "_links" : {
+     "self" : {
+        "_class" : "io.jenkins.blueocean.rest.hal.Link",
+        "href" : "/blue/rest/organizations/jenkins/pipelines/bo2/queue/64/"
+     }
+  },
+  "queuedTime" : "2016-06-29T14:11:52.191-0700"
+}`)
+
+			pipelineRun, err := c.Replay(ReplayOption{
+				Folders: []string{"pipelineA"},
+				Branch:  "bug/ux-334",
+				RunID:   "123",
+			})
+			Expect(err).Should(BeNil())
+			Expect(pipelineRun).ShouldNot(BeNil())
+			Expect(pipelineRun.ID).Should(Equal("64"))
+		})
+
+		It("Failed to relay PipelineRun", func() {
+			given(&ReplayOption{
+				Folders: []string{"pipelineA"},
+				RunID:   "123",
+			}, 400, `
+{
+    "message": "parameters.name is required element",
+    "code": 400,
+    "errors": []
+}`)
+			_, err := c.Replay(ReplayOption{
+				Folders: []string{"pipelineA"},
+				RunID:   "123",
+			})
+			Expect(err).ShouldNot(BeNil())
+		})
+	})
 })
 
 func Test_getHeaders(t *testing.T) {

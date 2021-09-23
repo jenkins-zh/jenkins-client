@@ -169,7 +169,7 @@ type ReplayOption struct {
 // Reference: https://github.com/jenkinsci/blueocean-plugin/tree/master/blueocean-rest#replay-a-pipeline-build
 func (c *BlueOceanClient) Replay(option ReplayOption) (*PipelineRun, error) {
 	pipelineRun := &PipelineRun{}
-	if err := c.RequestWithData(http.MethodPost, c.getReplayAPI(&option), nil, nil, 200, pipelineRun); err != nil {
+	if err := c.RequestWithData(http.MethodPost, c.getReplayAPI(&option), getHeaders(), nil, 200, pipelineRun); err != nil {
 		return nil, err
 	}
 	return pipelineRun, nil
