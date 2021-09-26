@@ -158,6 +158,33 @@ func (c *BlueOceanClient) getGetNodesAPI(option GetNodesOption) string {
 	return api
 }
 
+// ReplayOption contains some options while replaying a PipelineRun.
+type ReplayOption struct {
+	Folders []string
+	Branch  string
+	RunID   string
+}
+
+// Replay will queue up a replay of the pipeline run with the same commit id as the run used.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/tree/master/blueocean-rest#replay-a-pipeline-build
+func (c *BlueOceanClient) Replay(option ReplayOption) (*PipelineRun, error) {
+	pipelineRun := &PipelineRun{}
+	if err := c.RequestWithData(http.MethodPost, c.getReplayAPI(&option), getHeaders(), nil, 200, pipelineRun); err != nil {
+		return nil, err
+	}
+	return pipelineRun, nil
+}
+
+func (c *BlueOceanClient) getReplayAPI(option *ReplayOption) string {
+	api := c.getGetBuildAPI(GetBuildOption{
+		Pipelines: option.Folders,
+		Branch:    option.Branch,
+		RunID:     option.RunID,
+	})
+	api = api + "replay/"
+	return api
+}
+
 func getHeaders() map[string]string {
 	return map[string]string{
 		"Content-Type": "application/json",
