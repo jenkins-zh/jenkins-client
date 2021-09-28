@@ -37,6 +37,33 @@ func (c *BlueOceanClient) GetPipelines(folders ...string) (pipelines []Pipeline,
 	return
 }
 
+func (c *BlueOceanClient) getPipelineAPI(folders ...string) (api string) {
+	api = fmt.Sprintf("%s/%s/pipelines", organizationAPIPrefix, c.Organization)
+	for _, folder := range folders {
+		api = fmt.Sprintf("%s/%s/pipelines/", api, folder)
+	}
+	return
+}
+
+// GetPipeline obtains Pipeline metadata with Pipeline name and folders.
+func (c *BlueOceanClient) GetPipeline(pipelineName string, folders ...string) (*Pipeline, error) {
+	api := c.getGetPipelineAPI(pipelineName, folders...)
+	pipeline := &Pipeline{}
+	if err := c.RequestWithData(http.MethodGet, api, nil, nil, 200, pipeline); err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
+func (c *BlueOceanClient) getGetPipelineAPI(pipelineName string, folders ...string) string {
+	api := fmt.Sprintf("%s/%s", organizationAPIPrefix, c.Organization)
+	folders = append(folders, pipelineName)
+	for _, folder := range folders {
+		api = fmt.Sprintf("%s/pipelines/%s", api, folder)
+	}
+	return api
+}
+
 // Search searches jobs via the BlueOcean API
 func (c *BlueOceanClient) Search(name string, start, limit int) (items []JenkinsItem, err error) {
 	api := fmt.Sprintf("%s/?q=pipeline:*%s*;type:pipeline;organization:%s;excludedFromFlattening=jenkins.branch.MultiBranchProject,com.cloudbees.hudson.plugins.folder.AbstractFolder&filter=no-folders&start=%d&limit=%d",
@@ -97,14 +124,6 @@ func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineRun, error) 
 		return nil, err
 	}
 	return &pr, nil
-}
-
-func (c *BlueOceanClient) getPipelineAPI(folders ...string) (api string) {
-	api = fmt.Sprintf("%s/%s/pipelines", organizationAPIPrefix, c.Organization)
-	for _, folder := range folders {
-		api = fmt.Sprintf("%s/%s/pipelines/", api, folder)
-	}
-	return
 }
 
 // GetPipelineRuns returns a PipelineRun which in the possible nest folders
@@ -253,9 +272,44 @@ type Input struct {
 }
 
 // Pipeline represents a Jenkins BlueOcean Pipeline data
+// Reference:
+// - https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BluePipeline.java#L27
+// - https://github.com/jenkinsci/blueocean-plugin/blob/868c0ea4354f19e8d509deacc94325f97151aec0/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueContainerItem.java
+// - https://github.com/jenkinsci/blueocean-plugin/blob/868c0ea4354f19e8d509deacc94325f97151aec0/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueMultiBranchItem.java
+// - https://github.com/jenkinsci/blueocean-plugin/blob/868c0ea4354f19e8d509deacc94325f97151aec0/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueMultiBranchPipeline.java
 type Pipeline struct {
-	Name         string
-	Disabled     bool
-	DisplayName  string
-	WeatherScore int
+	// BluePipeline
+	Organization              string                `json:"organization,omitempty"`
+	Name                      string                `json:"name,omitempty"`
+	Disabled                  bool                  `json:"disabled,omitempty"`
+	DisplayName               string                `json:"displayName,omitempty"`
+	FullName                  string                `json:"fullName,omitempty"`
+	FullDisplayName           string                `json:"fullDisplayName,omitempty"`
+	WeatherScore              int                   `json:"weatherScore,omitempty"`
+	LatestRun                 *PipelineRun          `json:"latestRun,omitempty"`
+	EstimatedDurationInMillis int64                 `json:"estimatedDurationInMillis,omitempty"`
+	Permissions               map[string]bool       `json:"permissions,omitempty"`
+	Parameters                []ParameterDefinition `json:"parameters,omitempty"`
+
+	// BlueContainerItem
+	NumberOfPipelines   int      `json:"numberOfPipelines,omitempty"`
+	NumberOfFolders     int      `json:"numberOfFolders,omitempty"`
+	PipelineFolderNames []string `json:"pipelineFolderNames,omitempty"`
+
+	// BlueMultiBranchItem
+	TotalNumberOfBranches          int        `json:"totalNumberOfBranches,omitempty"`
+	NumberOfFailingBranches        int        `json:"numberOfFailingBranches,omitempty"`
+	NumberOfSuccessfulBranches     int        `json:"numberOfSuccessfulBranches,omitempty"`
+	TotalNumberOfPullRequests      int        `json:"totalNumberOfPullRequests,omitempty"`
+	NumberOfFailingPullRequests    int        `json:"numberOfFailingPullRequests,omitempty"`
+	NumberOfSuccessfulPullRequests int        `json:"numberOfSuccessfulPullRequests,omitempty"`
+	BranchNames                    []string   `json:"branchNames,omitempty"`
+	SCMSource                      *SCMSource `json:"scmSource,omitempty"`
+}
+
+// SCMSource provides metadata about the backing SCM for a BluePipeline.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/868c0ea4354f19e8d509deacc94325f97151aec0/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueScmSource.java
+type SCMSource struct {
+	ID     string `json:"id,omitempty"`
+	APIUrl string `json:"apiUrl,omitempty"`
 }

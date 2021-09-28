@@ -16,7 +16,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -508,6 +507,59 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 		})
 	})
 
+	Context("GetPipeline", func() {
+		It("Without folder", func() {
+			pipelineName := "pipelineA"
+			request, _ := http.NewRequest(http.MethodGet, c.getGetPipelineAPI(pipelineName), nil)
+			response := &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(bytes.NewBufferString(`{"name":"pipelineA"}`)),
+			}
+			roundTripper.EXPECT().
+				RoundTrip(core.NewRequestMatcher(request)).
+				Return(response, nil)
+
+			pipeline, err := c.GetPipeline(pipelineName)
+			Expect(err).To(Succeed())
+			Expect(pipeline.Name).To(Equal(pipelineName))
+		})
+
+		It("With one folder", func() {
+			pipelineName := "pipelineA"
+			folder1 := "folder1"
+			request, _ := http.NewRequest(http.MethodGet, c.getGetPipelineAPI(pipelineName, folder1), nil)
+			response := &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(bytes.NewBufferString(`{"name":"pipelineA"}`)),
+			}
+			roundTripper.EXPECT().
+				RoundTrip(core.NewRequestMatcher(request)).
+				Return(response, nil)
+
+			pipeline, err := c.GetPipeline(pipelineName, folder1)
+			Expect(err).To(Succeed())
+			Expect(pipeline.Name).To(Equal(pipelineName))
+		})
+
+		It("With two folders", func() {
+			pipelineName := "pipelineA"
+			folder1 := "folder1"
+			folder2 := "folder2"
+			request, _ := http.NewRequest(http.MethodGet, c.getGetPipelineAPI(pipelineName, folder1, folder2), nil)
+			response := &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(bytes.NewBufferString(`{"name":"pipelineA"}`)),
+			}
+			roundTripper.EXPECT().
+				RoundTrip(core.NewRequestMatcher(request)).
+				Return(response, nil)
+
+			pipeline, err := c.GetPipeline(pipelineName, folder1, folder2)
+			Expect(err).To(Succeed())
+			Expect(pipeline.Name).To(Equal(pipelineName))
+		})
+	})
+
 	Context("GetPipelineRun", func() {
 		It("Without two folders, with one pipeline", func() {
 			name := "test"
@@ -836,6 +888,56 @@ func TestBlueOceanClient_getReplayAPI(t *testing.T) {
 			}
 			if got := c.getReplayAPI(tt.args.option); got != tt.want {
 				t.Errorf("BlueOceanClient.getReplayAPI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBlueOceanClient_getGetPipelineAPI(t *testing.T) {
+	type args struct {
+		pipelineName string
+		folders      []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{{
+		name: "Without folder",
+		args: args{
+			pipelineName: "pipeline1",
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/pipeline1",
+	}, {
+		name: "Single folder",
+		args: args{
+			pipelineName: "pipeline1",
+			folders:      []string{"folder1"},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/pipeline1",
+	}, {
+		name: "Tweo folders",
+		args: args{
+			pipelineName: "pipeline1",
+			folders:      []string{"folder1", "folder2"},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/folder2/pipelines/pipeline1",
+	}, {
+		name: "Three folders",
+		args: args{
+			pipelineName: "pipeline1",
+			folders:      []string{"folder1", "folder2", "folder3"},
+		},
+		want: "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/folder2/pipelines/folder3/pipelines/pipeline1",
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &BlueOceanClient{
+				JenkinsCore:  core.JenkinsCore{},
+				Organization: "jenkins",
+			}
+			if got := c.getGetPipelineAPI(tt.args.pipelineName, tt.args.folders...); got != tt.want {
+				t.Errorf("BlueOceanClient.getGetPipelineAPI() = %v, want %v", got, tt.want)
 			}
 		})
 	}
