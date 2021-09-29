@@ -37,6 +37,33 @@ func (c *BlueOceanClient) GetPipelines(folders ...string) (pipelines []Pipeline,
 	return
 }
 
+func (c *BlueOceanClient) getPipelineAPI(folders ...string) (api string) {
+	api = fmt.Sprintf("%s/%s/pipelines", organizationAPIPrefix, c.Organization)
+	for _, folder := range folders {
+		api = fmt.Sprintf("%s/%s/pipelines/", api, folder)
+	}
+	return
+}
+
+// GetPipeline obtains Pipeline metadata with Pipeline name and folders.
+func (c *BlueOceanClient) GetPipeline(pipelineName string, folders ...string) (*Pipeline, error) {
+	api := c.getGetPipelineAPI(pipelineName, folders...)
+	pipeline := &Pipeline{}
+	if err := c.RequestWithData(http.MethodGet, api, nil, nil, 200, pipeline); err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
+func (c *BlueOceanClient) getGetPipelineAPI(pipelineName string, folders ...string) string {
+	api := fmt.Sprintf("%s/%s", organizationAPIPrefix, c.Organization)
+	folders = append(folders, pipelineName)
+	for _, folder := range folders {
+		api = fmt.Sprintf("%s/pipelines/%s", api, folder)
+	}
+	return api
+}
+
 // Search searches jobs via the BlueOcean API
 func (c *BlueOceanClient) Search(name string, start, limit int) (items []JenkinsItem, err error) {
 	api := fmt.Sprintf("%s/?q=pipeline:*%s*;type:pipeline;organization:%s;excludedFromFlattening=jenkins.branch.MultiBranchProject,com.cloudbees.hudson.plugins.folder.AbstractFolder&filter=no-folders&start=%d&limit=%d",
@@ -97,14 +124,6 @@ func (c *BlueOceanClient) GetBuild(option GetBuildOption) (*PipelineRun, error) 
 		return nil, err
 	}
 	return &pr, nil
-}
-
-func (c *BlueOceanClient) getPipelineAPI(folders ...string) (api string) {
-	api = fmt.Sprintf("%s/%s/pipelines", organizationAPIPrefix, c.Organization)
-	for _, folder := range folders {
-		api = fmt.Sprintf("%s/%s/pipelines/", api, folder)
-	}
-	return
 }
 
 // GetPipelineRuns returns a PipelineRun which in the possible nest folders
@@ -189,73 +208,4 @@ func getHeaders() map[string]string {
 	return map[string]string{
 		"Content-Type": "application/json",
 	}
-}
-
-// PipelineRun represents a build detail of Pipeline.
-// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java
-type PipelineRun struct {
-	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty"`
-	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty"`
-	Causes                    []interface{} `json:"causes,omitempty"`
-	ChangeSet                 []interface{} `json:"changeSet,omitempty"`
-	Description               string        `json:"description,omitempty"`
-	DurationInMillis          *int64        `json:"durationInMillis,omitempty"`
-	EnQueueTime               Time          `json:"enQueueTime,omitempty"`
-	EndTime                   Time          `json:"endTime,omitempty"`
-	EstimatedDurationInMillis *int64        `json:"estimatedDurationInMillis,omitempty"`
-	ID                        string        `json:"id,omitempty"`
-	Name                      string        `json:"name,omitempty"`
-	Organization              string        `json:"organization,omitempty"`
-	Pipeline                  string        `json:"pipeline,omitempty"`
-	Replayable                bool          `json:"replayable,omitempty"`
-	Result                    string        `json:"result,omitempty"`
-	RunSummary                string        `json:"runSummary,omitempty"`
-	StartTime                 Time          `json:"startTime,omitempty"`
-	State                     string        `json:"state,omitempty"`
-	Type                      string        `json:"type,omitempty"`
-	QueueID                   string        `json:"queueId,omitempty"`
-	CommitID                  string        `json:"commitId,omitempty"`
-	CommitURL                 string        `json:"commitUrl,omitempty"`
-	PullRequest               interface{}   `json:"pullRequest,omitempty"`
-	Branch                    interface{}   `json:"branch,omitempty"`
-}
-
-// Node represents a node detail of a PipelineRun.
-type Node struct {
-	DisplayDescription string `json:"displayDescription,omitempty"`
-	DisplayName        string `json:"displayName,omitempty"`
-	DurationInMillis   int    `json:"durationInMillis,omitempty"`
-	ID                 string `json:"id,omitempty"`
-	Input              *Input `json:"input,omitempty"`
-	Result             string `json:"result,omitempty"`
-	StartTime          Time   `json:"startTime,omitempty"`
-	State              string `json:"state,omitempty"`
-	Type               string `json:"type,omitempty"`
-	CauseOfBlockage    string `json:"causeOfBlockage,omitempty"`
-	Edges              []Edge `json:"edges,omitempty"`
-	FirstParent        string `json:"firstParent,omitempty"`
-	Restartable        bool   `json:"restartable,omitempty"`
-}
-
-// Edge represents edge of SimplePipeline flow graph.
-type Edge struct {
-	ID   string `json:"id,omitempty"`
-	Type string `json:"type,omitempty"`
-}
-
-// Input contains input step data.
-type Input struct {
-	ID         string                `json:"id,omitempty"`
-	Message    string                `json:"message,omitempty"`
-	Ok         string                `json:"ok,omitempty"`
-	Parameters []ParameterDefinition `json:"parameters,omitempty"`
-	Submitter  string                `json:"submitter,omitempty"`
-}
-
-// Pipeline represents a Jenkins BlueOcean Pipeline data
-type Pipeline struct {
-	Name         string
-	Disabled     bool
-	DisplayName  string
-	WeatherScore int
 }
