@@ -210,10 +210,17 @@ func getHeaders() map[string]string {
 	}
 }
 
+type GetStepsOption struct {
+	Folders      []string
+	PipelineName string
+	Branch       string
+	RunID        string
+}
+
 // GetSteps returns all steps of the given Pipeline.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/tree/master/blueocean-rest#get-pipeline-steps
-func (c *BlueOceanClient) GetSteps(runID string, pipelineName string, folders ...string) ([]Step, error) {
-	api := c.getGetStepsAPI(runID, pipelineName, folders...)
+func (c *BlueOceanClient) GetSteps(option GetStepsOption) ([]Step, error) {
+	api := c.getGetStepsAPI(&option)
 	steps := make([]Step, 0)
 	if err := c.RequestWithData(http.MethodGet, api, nil, nil, 200, &steps); err != nil {
 		return nil, err
@@ -221,7 +228,11 @@ func (c *BlueOceanClient) GetSteps(runID string, pipelineName string, folders ..
 	return steps, nil
 }
 
-func (c *BlueOceanClient) getGetStepsAPI(runID string, pipelineName string, folders ...string) string {
-	api := c.getGetPipelineAPI(pipelineName, folders...)
-	return fmt.Sprintf("%s/runs/%s/steps/", api, runID)
+func (c *BlueOceanClient) getGetStepsAPI(option *GetStepsOption) string {
+	// api := c.getGetPipelineAPI(pipelineName, folders...)
+	api := c.getGetPipelineAPI(option.PipelineName, option.Folders...)
+	if option.Branch != "" {
+		api = api + "/branches/" + option.Branch
+	}
+	return fmt.Sprintf("%s/runs/%s/steps/", api, option.RunID)
 }
