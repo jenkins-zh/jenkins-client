@@ -210,6 +210,7 @@ func getHeaders() map[string]string {
 	}
 }
 
+// GetStepsOption holds options for getting steps data.
 type GetStepsOption struct {
 	Folders      []string
 	PipelineName string
