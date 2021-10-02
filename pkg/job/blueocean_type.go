@@ -61,6 +61,20 @@ type Input struct {
 	Submitter  string                `json:"submitter,omitempty"`
 }
 
+// Step represents a step of Pipeline.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BluePipelineStep.java
+type Step struct {
+	ID                 string `json:"id,omitempty"`
+	DisplayName        string `json:"displayName,omitempty"`
+	DisplayDescription string `json:"displayDescription,omitempty"`
+	Type               string `json:"type,omitempty"`
+	Result             string `json:"result,omitempty"`
+	State              string `json:"state,omitempty"`
+	StartTime          Time   `json:"startTime,omitempty"`
+	DurationInMillis   int64  `json:"durationInMillis,omitempty"`
+	Input              *Input `json:"input,omitempty"`
+}
+
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueRunnableItem.java
 type blueRunnableItem struct {
 	WeatherScore              int                   `json:"weatherScore,omitempty"`
