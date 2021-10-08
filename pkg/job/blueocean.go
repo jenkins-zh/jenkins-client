@@ -209,3 +209,37 @@ func getHeaders() map[string]string {
 		"Content-Type": "application/json",
 	}
 }
+
+// GetStepsOption holds options for getting steps data.
+type GetStepsOption struct {
+	Folders      []string
+	PipelineName string
+	Branch       string
+	RunID        string
+	NodeID       string
+}
+
+// GetSteps returns all steps of the given Pipeline.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/tree/master/blueocean-rest#get-pipeline-steps
+func (c *BlueOceanClient) GetSteps(option GetStepsOption) ([]Step, error) {
+	api := c.getGetStepsAPI(&option)
+	steps := make([]Step, 0)
+	if err := c.RequestWithData(http.MethodGet, api, nil, nil, 200, &steps); err != nil {
+		return nil, err
+	}
+	return steps, nil
+}
+
+func (c *BlueOceanClient) getGetStepsAPI(option *GetStepsOption) string {
+	// api := c.getGetPipelineAPI(pipelineName, folders...)
+	api := c.getGetPipelineAPI(option.PipelineName, option.Folders...)
+	if option.Branch != "" {
+		api = api + "/branches/" + option.Branch
+	}
+	api = api + "/runs/" + option.RunID
+	if option.NodeID != "" {
+		api = api + "/nodes/" + option.NodeID
+	}
+	api = api + "/steps/"
+	return api
+}

@@ -651,6 +651,111 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			Expect(err).ShouldNot(BeNil())
 		})
 	})
+
+	Context("GetSteps", func() {
+		given := func(api string, statusCode int, body string) {
+			request, _ := http.NewRequest(http.MethodGet, api, nil)
+			response := &http.Response{
+				StatusCode: statusCode,
+				Body:       io.NopCloser(bytes.NewBufferString(body)),
+			}
+			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
+		}
+		It("Without folders", func() {
+			option := GetStepsOption{
+				RunID:        "123",
+				PipelineName: "pipelineA",
+			}
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/steps/", 200, "[]")
+			steps, err := c.GetSteps(option)
+			Expect(err).To(Succeed())
+			Expect(steps).NotTo(BeNil())
+			Expect(len(steps)).To(Equal(0))
+		})
+		It("With one folder", func() {
+			option := GetStepsOption{
+				RunID:        "123",
+				PipelineName: "pipelineA",
+				Folders:      []string{"folder1"},
+			}
+			given("/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/pipelineA/runs/123/steps/", 200, "[]")
+			steps, err := c.GetSteps(option)
+			Expect(err).To(Succeed())
+			Expect(steps).NotTo(BeNil())
+		})
+		It("With two folders", func() {
+			option := GetStepsOption{
+				RunID:        "123",
+				PipelineName: "pipelineA",
+				Folders:      []string{"folder1", "folder2"},
+			}
+			given("/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/folder2/pipelines/pipelineA/runs/123/steps/", 200, "[]")
+			steps, err := c.GetSteps(option)
+			Expect(err).To(Succeed())
+			Expect(steps).NotTo(BeNil())
+		})
+		It("Without folder but with branch", func() {
+			option := GetStepsOption{
+				RunID:        "123",
+				PipelineName: "pipelineA",
+				Branch:       "main",
+			}
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/main/runs/123/steps/", 200, "[]")
+			steps, err := c.GetSteps(option)
+			Expect(err).To(Succeed())
+			Expect(steps).NotTo(BeNil())
+			Expect(len(steps)).To(Equal(0))
+		})
+		It("With one folder and branch", func() {
+			option := GetStepsOption{
+				RunID:        "123",
+				PipelineName: "pipelineA",
+				Branch:       "main",
+				Folders:      []string{"folder1"},
+			}
+			given("/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/pipelineA/branches/main/runs/123/steps/", 200, "[]")
+			steps, err := c.GetSteps(option)
+			Expect(err).To(Succeed())
+			Expect(steps).NotTo(BeNil())
+			Expect(len(steps)).To(Equal(0))
+		})
+		It("Resposne one step", func() {
+			option := GetStepsOption{
+				RunID:        "123",
+				PipelineName: "pipelineA",
+			}
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/steps/", 200, `
+[{
+  "displayName" : "Shell Script",
+  "durationInMillis" : 70,
+  "id" : "5",
+  "result" : "SUCCESS",
+  "startTime" : "2021-10-02T10:37:30.443+0800"
+}]`)
+			steps, err := c.GetSteps(option)
+			Expect(err).To(Succeed())
+			Expect(steps).NotTo(BeNil())
+			Expect(len(steps)).To(Equal(1))
+			Expect(steps[0].ID).To(Equal("5"))
+			Expect(steps[0].StartTime.Local()).To(Equal(Time{Time: time.Date(2021, 10, 2, 2, 37, 30, 443000000, time.UTC)}.Local()))
+			Expect(steps[0].Result).To(Equal("SUCCESS"))
+			Expect(steps[0].DurationInMillis).To(Equal(int64(70)))
+			Expect(steps[0].DisplayName).To(Equal("Shell Script"))
+		})
+		It("With node ID", func() {
+			option := GetStepsOption{
+				RunID:        "123",
+				PipelineName: "pipelineA",
+				NodeID:       "456",
+			}
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/nodes/456/steps/", 200, "[]")
+			steps, err := c.GetSteps(option)
+			Expect(err).To(Succeed())
+			Expect(steps).NotTo(BeNil())
+			Expect(len(steps)).To(Equal(0))
+		})
+
+	})
 })
 
 func Test_getHeaders(t *testing.T) {
