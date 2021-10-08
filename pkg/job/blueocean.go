@@ -216,6 +216,7 @@ type GetStepsOption struct {
 	PipelineName string
 	Branch       string
 	RunID        string
+	NodeID       string
 }
 
 // GetSteps returns all steps of the given Pipeline.
@@ -235,5 +236,10 @@ func (c *BlueOceanClient) getGetStepsAPI(option *GetStepsOption) string {
 	if option.Branch != "" {
 		api = api + "/branches/" + option.Branch
 	}
-	return fmt.Sprintf("%s/runs/%s/steps/", api, option.RunID)
+	api = api + "/runs/" + option.RunID
+	if option.NodeID != "" {
+		api = api + "/nodes/" + option.NodeID
+	}
+	api = api + "/steps/"
+	return api
 }

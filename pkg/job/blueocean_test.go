@@ -666,7 +666,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 				RunID:        "123",
 				PipelineName: "pipelineA",
 			}
-			given(c.getGetStepsAPI(&option), 200, "[]")
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/steps/", 200, "[]")
 			steps, err := c.GetSteps(option)
 			Expect(err).To(Succeed())
 			Expect(steps).NotTo(BeNil())
@@ -678,7 +678,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 				PipelineName: "pipelineA",
 				Folders:      []string{"folder1"},
 			}
-			given(c.getGetStepsAPI(&option), 200, "[]")
+			given("/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/pipelineA/runs/123/steps/", 200, "[]")
 			steps, err := c.GetSteps(option)
 			Expect(err).To(Succeed())
 			Expect(steps).NotTo(BeNil())
@@ -687,9 +687,9 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			option := GetStepsOption{
 				RunID:        "123",
 				PipelineName: "pipelineA",
-				Folders:      []string{"folder1", "folder1"},
+				Folders:      []string{"folder1", "folder2"},
 			}
-			given(c.getGetStepsAPI(&option), 200, "[]")
+			given("/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/folder2/pipelines/pipelineA/runs/123/steps/", 200, "[]")
 			steps, err := c.GetSteps(option)
 			Expect(err).To(Succeed())
 			Expect(steps).NotTo(BeNil())
@@ -700,7 +700,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 				PipelineName: "pipelineA",
 				Branch:       "main",
 			}
-			given(c.getGetStepsAPI(&option), 200, "[]")
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/main/runs/123/steps/", 200, "[]")
 			steps, err := c.GetSteps(option)
 			Expect(err).To(Succeed())
 			Expect(steps).NotTo(BeNil())
@@ -713,7 +713,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 				Branch:       "main",
 				Folders:      []string{"folder1"},
 			}
-			given(c.getGetStepsAPI(&option), 200, "[]")
+			given("/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/pipelineA/branches/main/runs/123/steps/", 200, "[]")
 			steps, err := c.GetSteps(option)
 			Expect(err).To(Succeed())
 			Expect(steps).NotTo(BeNil())
@@ -724,7 +724,7 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 				RunID:        "123",
 				PipelineName: "pipelineA",
 			}
-			given(c.getGetStepsAPI(&option), 200, `
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/steps/", 200, `
 [{
   "displayName" : "Shell Script",
   "durationInMillis" : 70,
@@ -741,6 +741,18 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			Expect(steps[0].Result).To(Equal("SUCCESS"))
 			Expect(steps[0].DurationInMillis).To(Equal(int64(70)))
 			Expect(steps[0].DisplayName).To(Equal("Shell Script"))
+		})
+		It("With node ID", func() {
+			option := GetStepsOption{
+				RunID:        "123",
+				PipelineName: "pipelineA",
+				NodeID:       "456",
+			}
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/nodes/456/steps/", 200, "[]")
+			steps, err := c.GetSteps(option)
+			Expect(err).To(Succeed())
+			Expect(steps).NotTo(BeNil())
+			Expect(len(steps)).To(Equal(0))
 		})
 
 	})
@@ -1031,64 +1043,6 @@ func TestBlueOceanClient_getGetPipelineAPI(t *testing.T) {
 			}
 			if got := c.getGetPipelineAPI(tt.args.pipelineName, tt.args.folders...); got != tt.want {
 				t.Errorf("BlueOceanClient.getGetPipelineAPI() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_getGetStepsAPI(t *testing.T) {
-	tests := []struct {
-		name string
-		args GetStepsOption
-		want string
-	}{{
-		name: "With no folder",
-		args: GetStepsOption{
-			RunID:        "123",
-			PipelineName: "pipelineA",
-		},
-		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/runs/123/steps/",
-	}, {
-		name: "With single folder",
-		args: GetStepsOption{
-			RunID:        "123",
-			PipelineName: "pipelineA",
-			Folders:      []string{"folder1"},
-		},
-		want: "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/pipelineA/runs/123/steps/",
-	}, {
-		name: "With two folders",
-		args: GetStepsOption{
-			RunID:        "123",
-			PipelineName: "pipelineA",
-			Folders:      []string{"folder1", "folder2"},
-		},
-		want: "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/folder2/pipelines/pipelineA/runs/123/steps/",
-	}, {
-		name: "Without folder, but with branch",
-		args: GetStepsOption{
-			RunID:        "123",
-			PipelineName: "pipelineA",
-			Branch:       "main",
-		},
-		want: "/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/main/runs/123/steps/",
-	}, {
-		name: "With one folder and branch",
-		args: GetStepsOption{
-			RunID:        "123",
-			PipelineName: "pipelineA",
-			Branch:       "main",
-			Folders:      []string{"folder1"},
-		},
-		want: "/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/pipelineA/branches/main/runs/123/steps/",
-	}}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := BlueOceanClient{
-				Organization: "jenkins",
-			}
-			if got := c.getGetStepsAPI(&tt.args); got != tt.want {
-				t.Errorf("getGetStepsAPI() = %v, want %v", got, tt.want)
 			}
 		})
 	}
