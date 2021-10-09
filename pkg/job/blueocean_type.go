@@ -1,8 +1,8 @@
 package job
 
-// PipelineRun represents a build detail of Pipeline.
-// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java
-type PipelineRun struct {
+// blueItemRun contains basic metadata of a build.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueItemRun.java
+type blueItemRun struct {
 	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty"`
 	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty"`
 	Causes                    []interface{} `json:"causes,omitempty"`
@@ -11,6 +11,7 @@ type PipelineRun struct {
 	DurationInMillis          *int64        `json:"durationInMillis,omitempty"`
 	EnQueueTime               Time          `json:"enQueueTime,omitempty"`
 	EndTime                   Time          `json:"endTime,omitempty"`
+	StartTime                 Time          `json:"startTime,omitempty"`
 	EstimatedDurationInMillis *int64        `json:"estimatedDurationInMillis,omitempty"`
 	ID                        string        `json:"id,omitempty"`
 	Name                      string        `json:"name,omitempty"`
@@ -19,14 +20,47 @@ type PipelineRun struct {
 	Replayable                bool          `json:"replayable,omitempty"`
 	Result                    string        `json:"result,omitempty"`
 	RunSummary                string        `json:"runSummary,omitempty"`
-	StartTime                 Time          `json:"startTime,omitempty"`
 	State                     string        `json:"state,omitempty"`
 	Type                      string        `json:"type,omitempty"`
-	QueueID                   string        `json:"queueId,omitempty"`
-	CommitID                  string        `json:"commitId,omitempty"`
-	CommitURL                 string        `json:"commitUrl,omitempty"`
-	PullRequest               interface{}   `json:"pullRequest,omitempty"`
-	Branch                    interface{}   `json:"branch,omitempty"`
+}
+
+// PipelineRun represents a build detail of Pipeline.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java
+type PipelineRun struct {
+	blueItemRun
+	QueueID     string      `json:"queueId,omitempty"`
+	CommitID    string      `json:"commitId,omitempty"`
+	CommitURL   string      `json:"commitUrl,omitempty"`
+	PullRequest PullRequest `json:"pullRequest,omitempty"`
+	Branch      Branch      `json:"branch,omitempty"`
+}
+
+// PipelineRunSummary is summary of a PipelineRun.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest-impl/src/main/java/io/jenkins/blueocean/service/embedded/rest/AbstractBlueRunSummary.java#L18
+type PipelineRunSummary struct {
+	blueItemRun
+}
+
+// PullRequest contains metadata of pull request.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/BranchImpl.java#L143
+type PullRequest struct {
+	ID     string `json:"id,omitempty"`
+	Author string `json:"author,omitempty"`
+	Title  string `json:"title,omitempty"`
+	URL    string `json:"url,omitempty"`
+}
+
+// Branch contains metadata of branch.
+type Branch struct {
+	URL       string  `json:"url,omitempty"`
+	IsPrimary bool    `json:"isPrimary,omitempty"`
+	Issues    []Issue `json:"issues,omitempty"`
+}
+
+// Issue holds issue ID and URL.
+type Issue struct {
+	ID  string `json:"id,omitempty"`
+	URL string `json:"url,omitempty"`
 }
 
 // Node represents a node detail of a PipelineRun.
@@ -78,7 +112,7 @@ type Step struct {
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueRunnableItem.java
 type blueRunnableItem struct {
 	WeatherScore              int                   `json:"weatherScore,omitempty"`
-	LatestRun                 *PipelineRun          `json:"latestRun,omitempty"`
+	LatestRun                 *PipelineRunSummary   `json:"latestRun,omitempty"`
 	EstimatedDurationInMillis int64                 `json:"estimatedDurationInMillis,omitempty"`
 	Permissions               map[string]bool       `json:"permissions,omitempty"`
 	Parameters                []ParameterDefinition `json:"parameters,omitempty"`
@@ -132,4 +166,13 @@ type Pipeline struct {
 type SCMSource struct {
 	ID     string `json:"id,omitempty"`
 	APIUrl string `json:"apiUrl,omitempty"`
+}
+
+// PipelineBranch is like Pipeline but contains some additional data, such as branch and pull request.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/BranchImpl.java#L37
+type PipelineBranch struct {
+	blueRunnableItem
+	bluePipelineItem
+	Branch      Branch      `json:"branch,omitempty"`
+	PullRequest PullRequest `json:"pullRequest,omitempty"`
 }
