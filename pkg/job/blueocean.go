@@ -254,7 +254,7 @@ const (
 	FolderJobFilter Filter = "no-folders"
 	// OriginFilter will filter out branches that are not pull requests.
 	OriginFilter Filter = "origin"
-	// PullRequestsFilter will filter out branches that are pull requests.
+	// PullRequestFilter will filter out branches that are pull requests.
 	PullRequestFilter Filter = "pull-requests"
 )
 
