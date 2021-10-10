@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"strings"
 
@@ -242,4 +243,56 @@ func (c *BlueOceanClient) getGetStepsAPI(option *GetStepsOption) string {
 	}
 	api = api + "/steps/"
 	return api
+}
+
+// Filter is Pipeline job filter.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineJobFilters.java
+type Filter string
+
+const (
+	// FolderJobFilter will filter out non folder Pipelines.
+	FolderJobFilter Filter = "no-folders"
+	// OriginFilter will filter out branches that are not pull requests.
+	OriginFilter Filter = "origin"
+	// PullRequestsFilter will filter out branches that are pull requests.
+	PullRequestFilter Filter = "pull-requests"
+)
+
+// GetBranchesOption contains some options for getting Pipeline branches.
+type GetBranchesOption struct {
+	Folders      []string
+	PipelineName string
+	Filter       Filter
+	Start        int
+	Limit        int
+}
+
+// GetBranches gets branches of a Pipeline.
+func (c *BlueOceanClient) GetBranches(option GetBranchesOption) ([]PipelineBranch, error) {
+	api := c.getGetBranchesAPI(&option)
+	branches := []PipelineBranch{}
+	if err := c.RequestWithData(http.MethodGet, api, nil, nil, http.StatusOK, &branches); err != nil {
+		return nil, err
+	}
+	return branches, nil
+}
+
+func (c *BlueOceanClient) getGetBranchesAPI(option *GetBranchesOption) string {
+	api := c.getGetPipelineAPI(option.PipelineName, option.Folders...)
+	api = api + "/branches/"
+	apiURL := &url.URL{
+		Path: api,
+	}
+	query := apiURL.Query()
+	if option.Filter != "" {
+		query.Add("filter", string(option.Filter))
+	}
+	if option.Start > 0 {
+		query.Add("start", strconv.Itoa(option.Start))
+	}
+	if option.Limit > 0 {
+		query.Add("limit", strconv.Itoa(option.Limit))
+	}
+	apiURL.RawQuery = query.Encode()
+	return apiURL.String()
 }
