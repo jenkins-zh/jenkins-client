@@ -756,6 +756,87 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 		})
 
 	})
+
+	Context("GetBranches", func() {
+		given := func(api string, expectedStatus int, responseBody string) {
+			request, _ := http.NewRequest(http.MethodGet, api, nil)
+			response := &http.Response{
+				StatusCode: expectedStatus,
+				Body:       io.NopCloser(strings.NewReader(responseBody)),
+			}
+			roundTripper.EXPECT().RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
+		}
+		It("Without folder", func() {
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/", http.StatusOK, `[]`)
+			branches, err := c.GetBranches(GetBranchesOption{
+				PipelineName: "pipelineA",
+			})
+			Expect(err).To(Succeed())
+			Expect(branches).NotTo(BeNil())
+			Expect(len(branches)).To(Equal(0))
+		})
+		It("With one folder", func() {
+			given("/blue/rest/organizations/jenkins/pipelines/folder1/pipelines/pipelineA/branches/", http.StatusOK, `[]`)
+			branches, err := c.GetBranches(GetBranchesOption{
+				Folders:      []string{"folder1"},
+				PipelineName: "pipelineA",
+			})
+			Expect(err).To(Succeed())
+			Expect(branches).NotTo(BeNil())
+			Expect(len(branches)).To(Equal(0))
+		})
+		It("With query", func() {
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/?filter=origin&start=123&limit=456", http.StatusOK, `[]`)
+			branches, err := c.GetBranches(GetBranchesOption{
+				PipelineName: "pipelineA",
+				Filter:       OriginFilter,
+				Start:        123,
+				Limit:        456,
+			})
+			Expect(err).To(Succeed())
+			Expect(branches).NotTo(BeNil())
+			Expect(len(branches)).To(Equal(0))
+		})
+		It("Response a branch", func() {
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/", http.StatusOK, `
+[{
+   "disabled":false,
+   "displayName":"v0.0.1",
+   "estimatedDurationInMillis":-1,
+   "fullDisplayName":"my-devops-projectsg945/github-pipeline/v0.0.1",
+   "fullName":"my-devops-projectsg945/github-pipeline/v0.0.1",
+   "latestRun":null,
+   "name":"v0.0.1",
+   "organization":"jenkins",
+   "weatherScore":100,
+   "branch":{
+      "isPrimary":false,
+      "issues":[],
+      "url":"https://github.com/JohnNiang/devops-java-thin-sample/tree/v0.0.1"
+   }
+}]
+			`)
+			branches, err := c.GetBranches(GetBranchesOption{
+				PipelineName: "pipelineA",
+			})
+			Expect(err).To(Succeed())
+			Expect(branches).NotTo(BeNil())
+			Expect(len(branches)).To(Equal(1))
+			branch := branches[0]
+			Expect(branch.Disabled).Should(BeFalse())
+			Expect(branch.Name).Should(Equal("v0.0.1"))
+			Expect(branch.WeatherScore).Should(Equal(100))
+			Expect(branch.LatestRun).To(BeNil())
+			Expect(branch.Branch.URL).Should(Equal("https://github.com/JohnNiang/devops-java-thin-sample/tree/v0.0.1"))
+		})
+		It("Error Respoonse", func() {
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/", http.StatusBadRequest, `Invalid Pipeline name`)
+			_, err := c.GetBranches(GetBranchesOption{
+				PipelineName: "pipelineA",
+			})
+			Expect(err).NotTo(Succeed())
+		})
+	})
 })
 
 func Test_getHeaders(t *testing.T) {
