@@ -28,11 +28,11 @@ type BlueItemRun struct {
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java
 type PipelineRun struct {
 	BlueItemRun
-	QueueID     string      `json:"queueId,omitempty"`
-	CommitID    string      `json:"commitId,omitempty"`
-	CommitURL   string      `json:"commitUrl,omitempty"`
-	PullRequest PullRequest `json:"pullRequest,omitempty"`
-	Branch      Branch      `json:"branch,omitempty"`
+	QueueID     string       `json:"queueId,omitempty"`
+	CommitID    string       `json:"commitId,omitempty"`
+	CommitURL   string       `json:"commitUrl,omitempty"`
+	PullRequest *PullRequest `json:"pullRequest,omitempty"`
+	Branch      *Branch      `json:"branch,omitempty"`
 }
 
 // PipelineRunSummary is summary of a PipelineRun.
@@ -178,6 +178,6 @@ type SCMSource struct {
 type PipelineBranch struct {
 	BlueRunnableItem
 	BluePipelineItem
-	Branch      Branch      `json:"branch,omitempty"`
-	PullRequest PullRequest `json:"pullRequest,omitempty"`
+	Branch      *Branch      `json:"branch,omitempty"`
+	PullRequest *PullRequest `json:"pullRequest,omitempty"`
 }
