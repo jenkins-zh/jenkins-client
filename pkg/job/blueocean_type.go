@@ -37,6 +37,8 @@ type BlueArtifact struct {
 	Downloadable bool   `json:"downloadable,omitempty"`
 }
 
+// BlueChangeSetEntry represents a single commit as a REST resource.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueChangeSetEntry.java#L15
 type BlueChangeSetEntry struct {
 	CommitID      string    `json:"commitId,omitempty"`
 	Author        *BlueUser `json:"author,omitempty"`
@@ -48,6 +50,8 @@ type BlueChangeSetEntry struct {
 	Issues        []Issue   `json:"issues,omitempty"`
 }
 
+// BlueUser is an API endpoint for a user.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueUser.java#L16
 type BlueUser struct {
 	ID         string              `json:"id,omitempty"`
 	FullName   string              `json:"fullName,omitempty"`
