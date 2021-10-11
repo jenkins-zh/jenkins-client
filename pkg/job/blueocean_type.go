@@ -1,8 +1,8 @@
 package job
 
-// blueItemRun contains basic metadata of a build.
+// BlueItemRun contains basic metadata of a build.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueItemRun.java
-type blueItemRun struct {
+type BlueItemRun struct {
 	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty"`
 	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty"`
 	Causes                    []interface{} `json:"causes,omitempty"`
@@ -27,7 +27,7 @@ type blueItemRun struct {
 // PipelineRun represents a build detail of Pipeline.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineRunImpl.java
 type PipelineRun struct {
-	blueItemRun
+	BlueItemRun
 	QueueID     string      `json:"queueId,omitempty"`
 	CommitID    string      `json:"commitId,omitempty"`
 	CommitURL   string      `json:"commitUrl,omitempty"`
@@ -38,7 +38,7 @@ type PipelineRun struct {
 // PipelineRunSummary is summary of a PipelineRun.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest-impl/src/main/java/io/jenkins/blueocean/service/embedded/rest/AbstractBlueRunSummary.java#L18
 type PipelineRunSummary struct {
-	blueItemRun
+	BlueItemRun
 }
 
 // PullRequest contains metadata of pull request.
@@ -109,8 +109,9 @@ type Step struct {
 	Input              *Input `json:"input,omitempty"`
 }
 
+// BlueRunnableItem contains some fields runnable PipelineRun owns only.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueRunnableItem.java
-type blueRunnableItem struct {
+type BlueRunnableItem struct {
 	WeatherScore              int                   `json:"weatherScore,omitempty"`
 	LatestRun                 *PipelineRunSummary   `json:"latestRun,omitempty"`
 	EstimatedDurationInMillis int64                 `json:"estimatedDurationInMillis,omitempty"`
@@ -118,8 +119,9 @@ type blueRunnableItem struct {
 	Parameters                []ParameterDefinition `json:"parameters,omitempty"`
 }
 
+// BluePipelineItem only contains minimal fields PipelineRun owns.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BluePipelineItem.java
-type bluePipelineItem struct {
+type BluePipelineItem struct {
 	Organization    string `json:"organization,omitempty"`
 	Name            string `json:"name,omitempty"`
 	Disabled        bool   `json:"disabled,omitempty"`
@@ -128,15 +130,17 @@ type bluePipelineItem struct {
 	FullDisplayName string `json:"fullDisplayName,omitempty"`
 }
 
+// BlueContainerItem only contains folders information of a PipelineRun.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueContainerItem.java
-type blueContainerItem struct {
+type BlueContainerItem struct {
 	NumberOfPipelines   int      `json:"numberOfPipelines,omitempty"`
 	NumberOfFolders     int      `json:"numberOfFolders,omitempty"`
 	PipelineFolderNames []string `json:"pipelineFolderNames,omitempty"`
 }
 
+// BlueMultiBranchItem contains some fields multi-branch PipelineRun owns only.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueMultiBranchItem.java
-type blueMultiBranchItem struct {
+type BlueMultiBranchItem struct {
 	TotalNumberOfBranches          int      `json:"totalNumberOfBranches,omitempty"`
 	NumberOfFailingBranches        int      `json:"numberOfFailingBranches,omitempty"`
 	NumberOfSuccessfulBranches     int      `json:"numberOfSuccessfulBranches,omitempty"`
@@ -146,19 +150,20 @@ type blueMultiBranchItem struct {
 	BranchNames                    []string `json:"branchNames,omitempty"`
 }
 
+// BlueMultiBranchPipeline contains all fields mult-branch PipelineRun owns.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/MultiBranchPipelineImpl.java
-type blueMultiBranchPipeline struct {
-	blueRunnableItem
-	bluePipelineItem
-	blueContainerItem
-	blueMultiBranchItem
+type BlueMultiBranchPipeline struct {
+	BlueRunnableItem
+	BluePipelineItem
+	BlueContainerItem
+	BlueMultiBranchItem
 	SCMSource  *SCMSource `json:"scmSource,omitempty"`
 	ScriptPath string     `json:"scriptPath,omitempty"`
 }
 
 // Pipeline represents a Jenkins BlueOcean Pipeline data
 type Pipeline struct {
-	blueMultiBranchPipeline
+	BlueMultiBranchPipeline
 }
 
 // SCMSource provides metadata about the backing SCM for a BluePipeline.
@@ -171,8 +176,8 @@ type SCMSource struct {
 // PipelineBranch is like Pipeline but contains some additional data, such as branch and pull request.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/BranchImpl.java#L37
 type PipelineBranch struct {
-	blueRunnableItem
-	bluePipelineItem
+	BlueRunnableItem
+	BluePipelineItem
 	Branch      Branch      `json:"branch,omitempty"`
 	PullRequest PullRequest `json:"pullRequest,omitempty"`
 }
