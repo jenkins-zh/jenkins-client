@@ -1,27 +1,84 @@
 package job
 
+import "fmt"
+
 // BlueItemRun contains basic metadata of a build.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueItemRun.java
 type BlueItemRun struct {
-	ArtifactsZipFile          interface{}   `json:"artifactsZipFile,omitempty"`
-	CauseOfBlockage           string        `json:"causeOfBlockage,omitempty"`
-	Causes                    []interface{} `json:"causes,omitempty"`
-	ChangeSet                 []interface{} `json:"changeSet,omitempty"`
-	Description               string        `json:"description,omitempty"`
-	DurationInMillis          *int64        `json:"durationInMillis,omitempty"`
-	EnQueueTime               Time          `json:"enQueueTime,omitempty"`
-	EndTime                   Time          `json:"endTime,omitempty"`
-	StartTime                 Time          `json:"startTime,omitempty"`
-	EstimatedDurationInMillis *int64        `json:"estimatedDurationInMillis,omitempty"`
-	ID                        string        `json:"id,omitempty"`
-	Name                      string        `json:"name,omitempty"`
-	Organization              string        `json:"organization,omitempty"`
-	Pipeline                  string        `json:"pipeline,omitempty"`
-	Replayable                bool          `json:"replayable,omitempty"`
-	Result                    string        `json:"result,omitempty"`
-	RunSummary                string        `json:"runSummary,omitempty"`
-	State                     string        `json:"state,omitempty"`
-	Type                      string        `json:"type,omitempty"`
+	ArtifactsZipFile          *BlueArtifact        `json:"artifactsZipFile,omitempty"`
+	CauseOfBlockage           string               `json:"causeOfBlockage,omitempty"`
+	Causes                    []Cause              `json:"causes,omitempty"`
+	ChangeSet                 []BlueChangeSetEntry `json:"changeSet,omitempty"`
+	Description               string               `json:"description,omitempty"`
+	DurationInMillis          *int64               `json:"durationInMillis,omitempty"`
+	EnQueueTime               Time                 `json:"enQueueTime,omitempty"`
+	EndTime                   Time                 `json:"endTime,omitempty"`
+	StartTime                 Time                 `json:"startTime,omitempty"`
+	EstimatedDurationInMillis *int64               `json:"estimatedDurationInMillis,omitempty"`
+	ID                        string               `json:"id,omitempty"`
+	Name                      string               `json:"name,omitempty"`
+	Organization              string               `json:"organization,omitempty"`
+	Pipeline                  string               `json:"pipeline,omitempty"`
+	Replayable                bool                 `json:"replayable,omitempty"`
+	Result                    string               `json:"result,omitempty"`
+	RunSummary                string               `json:"runSummary,omitempty"`
+	State                     string               `json:"state,omitempty"`
+	Type                      string               `json:"type,omitempty"`
+}
+
+// BlueArtifact contains fields that artifact owns.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueArtifact.java#L9
+type BlueArtifact struct {
+	ID           string `json:"id,omitempty"`
+	Name         string `json:"name,omitempty"`
+	Path         string `json:"path,omitempty"`
+	URL          string `json:"url,omitempty"`
+	Size         int64  `json:"size,omitempty"`
+	Downloadable bool   `json:"downloadable,omitempty"`
+}
+
+type BlueChangeSetEntry struct {
+	CommitID      string    `json:"commitId,omitempty"`
+	Author        *BlueUser `json:"author,omitempty"`
+	Timestamp     Time      `json:"timestamp,omitempty"`
+	Message       string    `json:"msg,omitempty"`
+	AffectedPaths []string  `json:"affectedPaths,omitempty"`
+	URL           string    `json:"url,omitempty"`
+	CheckoutCount int       `json:"checkoutCount,omitempty"`
+	Issues        []Issue   `json:"issues,omitempty"`
+}
+
+type BlueUser struct {
+	ID         string              `json:"id,omitempty"`
+	FullName   string              `json:"fullName,omitempty"`
+	Email      string              `json:"email,omitempty"`
+	Avatar     string              `json:"avatar,omitempty"`
+	Permission *BlueUserPermission `json:"permission,omitempty"`
+}
+
+// Permissions are a map (string, bool) to represent permission of some operations.
+type Permissions map[string]bool
+
+// BlueUserPermission contains administrator, pipeline permission and credential permission.
+// Reference: https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueUserPermission.java#L14
+type BlueUserPermission struct {
+	Administrator         bool         `json:"administrator,omitempty"`
+	PipelinePermissions   *Permissions `json:"pipeline,omitempty"`
+	CredentialPermissions *Permissions `json:"credential,omitempty"`
+}
+
+// Cause is a map structure and contains shortDescription field at least.
+// Reference:
+// - https://github.com/jenkinsci/blueocean-plugin/blob/6b27be3724c892427b732f30575fdcc2977cfaef/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueRun.java#L257
+// - https://github.com/jenkinsci/jenkins/blob/f8b43c12fb6f07c1118d63f1435e6564723a3253/core/src/main/java/hudson/model/Cause.java#L401
+type Cause map[string]interface{}
+
+// GetShortDescription gets short description of current cause.
+func (cause Cause) GetShortDescription() string {
+	if shortDescription, ok := cause["shortDescription"]; ok && shortDescription != nil {
+		return fmt.Sprint(shortDescription)
+	}
+	return ""
 }
 
 // PipelineRun represents a build detail of Pipeline.
@@ -115,7 +172,7 @@ type BlueRunnableItem struct {
 	WeatherScore              int                   `json:"weatherScore,omitempty"`
 	LatestRun                 *PipelineRunSummary   `json:"latestRun,omitempty"`
 	EstimatedDurationInMillis int64                 `json:"estimatedDurationInMillis,omitempty"`
-	Permissions               map[string]bool       `json:"permissions,omitempty"`
+	Permissions               *Permissions          `json:"permissions,omitempty"`
 	Parameters                []ParameterDefinition `json:"parameters,omitempty"`
 }
 
