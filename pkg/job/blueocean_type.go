@@ -5,7 +5,7 @@ import "fmt"
 // BlueItemRun contains basic metadata of a build.
 // Reference: https://github.com/jenkinsci/blueocean-plugin/blob/a7cbc946b73d89daf9dfd91cd713cc7ab64a2d95/blueocean-rest/src/main/java/io/jenkins/blueocean/rest/model/BlueItemRun.java
 type BlueItemRun struct {
-	ArtifactsZipFile          *BlueArtifact        `json:"artifactsZipFile,omitempty"`
+	ArtifactsZipFile          string               `json:"artifactsZipFile,omitempty"`
 	CauseOfBlockage           string               `json:"causeOfBlockage,omitempty"`
 	Causes                    []Cause              `json:"causes,omitempty"`
 	ChangeSet                 []BlueChangeSetEntry `json:"changeSet,omitempty"`
