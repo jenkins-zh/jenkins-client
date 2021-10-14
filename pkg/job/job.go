@@ -524,19 +524,27 @@ type ParametersDefinitionProperty struct {
 }
 
 // ParameterDefinition holds the parameter definition
+// Reference: https://github.com/jenkinsci/jenkins/blob/master/core/src/main/java/hudson/model/ParameterDefinition.java#L98
 type ParameterDefinition struct {
-	Description           string
-	Name                  string `json:"name"`
-	Type                  string
-	Value                 string `json:"value"`
-	Filepath              string `json:"file"`
-	DefaultParameterValue DefaultParameterValue
+	Description string `json:"description,omitempty"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Value       string `json:"value"`
+	// Filepath field dosen't belong to ParameterDefinition
+	Filepath              string         `json:"file,omitempty"`
+	DefaultParameterValue ParameterValue `json:"defaultParameterValue"`
 }
 
-// DefaultParameterValue represents the default value for param
-type DefaultParameterValue struct {
-	Description string
-	Value       interface{}
+// ParameterValue represents the value for param
+// Reference: https://github.com/jenkinsci/jenkins/blob/f23512f2bc97d18cd4f0183a7db4a62bc6b84196/core/src/main/java/hudson/model/ParameterValue.java#L78
+type ParameterValue struct {
+	Name  string      `json:"name"`
+	Value interface{} `json:"value,omitempty"`
+
+	// Fields of RunParameterValue
+	// Reference: https://github.com/jenkinsci/jenkins/blob/f23512f2bc97d18cd4f0183a7db4a62bc6b84196/core/src/main/java/hudson/model/RunParameterValue.java#L33
+	JobName string `json:"jobName,omitempty"`
+	Number  string `json:"number,omitempty"`
 }
 
 // SimpleJobBuild represents a simple job build
