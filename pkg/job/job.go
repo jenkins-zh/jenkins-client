@@ -526,13 +526,12 @@ type ParametersDefinitionProperty struct {
 // ParameterDefinition holds the parameter definition
 // Reference: https://github.com/jenkinsci/jenkins/blob/master/core/src/main/java/hudson/model/ParameterDefinition.java#L98
 type ParameterDefinition struct {
-	Description string `json:"description,omitempty"`
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Value       string `json:"value"`
-	// Filepath field dosen't belong to ParameterDefinition
-	Filepath              string         `json:"file,omitempty"`
-	DefaultParameterValue ParameterValue `json:"defaultParameterValue"`
+	Description           string          `json:"description,omitempty"`
+	Name                  string          `json:"name"`
+	Type                  string          `json:"type"`
+	Value                 string          `json:"value"`
+	Filepath              string          `json:"file,omitempty"`
+	DefaultParameterValue *ParameterValue `json:"defaultParameterValue,omitempty"`
 }
 
 // ParameterValue represents the value for param

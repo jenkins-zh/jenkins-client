@@ -68,7 +68,7 @@ func PrepareForBuildWithNoParams(roundTripper *mhttp.MockRoundTripper, rootURL, 
 // PrepareForBuildWithParams only for test
 func PrepareForBuildWithParams(roundTripper *mhttp.MockRoundTripper, rootURL, jobName, user, password string) (
 	request *http.Request, response *http.Response) {
-	formData := url.Values{"json": {`{"parameter": {"Description":"","name":"name","Type":"StringParameterDefinition","value":"value","file":"","DefaultParameterValue":{"Description":"","Value":null}}}`}}
+	formData := url.Values{"json": {`{"parameter": {"name":"name","type":"StringParameterDefinition","value":"value"}}`}}
 	payload := strings.NewReader(formData.Encode())
 	request, _ = http.NewRequest(http.MethodPost, fmt.Sprintf("%s/job/%s/build", rootURL, jobName), payload)
 	request.Header.Add(httpdownloader.ContentType, httpdownloader.ApplicationForm)
