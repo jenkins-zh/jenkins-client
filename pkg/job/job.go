@@ -532,6 +532,14 @@ type ParameterDefinition struct {
 	Value                 string          `json:"value"`
 	Filepath              string          `json:"file,omitempty"`
 	DefaultParameterValue *ParameterValue `json:"defaultParameterValue,omitempty"`
+
+	// Reference: https://github.com/jenkinsci/jenkins/blob/65b9f1cf51c3b3cf44ecb7d51d3f30d7dbe6b3bd/core/src/main/java/hudson/model/RunParameterDefinition.java#L103-L106
+	Choices []string `json:"choices,omitempty"`
+
+	// Reference: https://github.com/jenkinsci/jenkins/blob/65b9f1cf51c3b3cf44ecb7d51d3f30d7dbe6b3bd/core/src/main/java/hudson/model/RunParameterDefinition.java#L103-L106
+	ProjectName string `json:"projectName,omitempty"`
+	// Reference: https://github.com/jenkinsci/jenkins/blob/65b9f1cf51c3b3cf44ecb7d51d3f30d7dbe6b3bd/core/src/main/java/hudson/model/RunParameterDefinition.java#L116-L121
+	Filter string `json:"filter,omitempty"`
 }
 
 // ParameterValue represents the value for param
