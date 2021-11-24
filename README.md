@@ -148,3 +148,8 @@ Pay attention to the part of the Jenkins CLI, they need some special plugins. Pl
 | API | Plugin |
 |---|---|
 | Search Job | [pipeline-restful-api](https://github.com/jenkinsci/pipeline-restful-api-plugin) |
+
+## Release
+
+This project takes advantage of [ks-releaser](https://github.com/kubesphere-sigs/ks-releaser/) to do the release job. Please file a Pull Request against [this repository](https://github.com/LinuxSuRen/versions).
+
