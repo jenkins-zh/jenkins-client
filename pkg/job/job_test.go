@@ -2,9 +2,11 @@ package job
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
@@ -523,6 +525,107 @@ func TestParsePipelinePath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := parsePipelinePath(tt.args.pipelines); got != tt.want {
 				t.Errorf("parsePipelinePath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParameterDefinition(t *testing.T) {
+	type args struct {
+		parameterJSON string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want ParameterDefinition
+	}{{
+		name: "String parametere definition",
+		args: args{
+			// Test data from https://github.com/jenkinsci/blueocean-plugin/tree/master/blueocean-rest#parameterized-pipeline
+			parameterJSON: `
+{
+    "_class" : "hudson.model.StringParameterDefinition",
+    "defaultParameterValue" : {
+      "_class" : "hudson.model.StringParameterValue",
+      "name" : "param1",
+      "value" : "xyz"
+    },
+    "description" : "string param",
+    "name" : "param1",
+    "type" : "StringParameterDefinition"
+}`,
+		},
+		want: ParameterDefinition{
+			Name:        "param1",
+			Type:        "StringParameterDefinition",
+			Description: "string param",
+			DefaultParameterValue: &ParameterValue{
+				Name:  "param1",
+				Value: "xyz",
+			},
+		},
+	}, {
+		name: "Choice parameter definition",
+		args: args{
+			parameterJSON: `
+{
+    "defaultParameterValue": {
+      "name": "choice",
+      "value": "a"
+    },
+    "description": "choice description",
+    "name": "choice",
+    "type": "ChoiceParameterDefinition",
+    "choices": ["a", "b", "c", "d"]
+}`,
+		},
+		want: ParameterDefinition{
+			Name:        "choice",
+			Type:        "ChoiceParameterDefinition",
+			Description: "choice description",
+			Choices:     []string{"a", "b", "c", "d"},
+			DefaultParameterValue: &ParameterValue{
+				Name:  "choice",
+				Value: "a",
+			},
+		},
+	}, {
+		name: "Run parameter definition",
+		args: args{
+			parameterJSON: `
+{
+    "defaultParameterValue": {
+      "name": "rpd",
+      "value": true
+    },
+    "description": "desc",
+    "name": "rpd",
+    "projectName": "project",
+    "filter": "stable",
+    "type": "RunParameterDefinition"
+}`,
+		},
+		want: ParameterDefinition{
+			Name:        "rpd",
+			ProjectName: "project",
+			Filter:      "stable",
+			Type:        "RunParameterDefinition",
+			Description: "desc",
+			DefaultParameterValue: &ParameterValue{
+				Name:  "rpd",
+				Value: true,
+			},
+		},
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			parameter := ParameterDefinition{}
+			if err := json.Unmarshal([]byte(tt.args.parameterJSON), &parameter); err != nil {
+				t.Fatal("faile to unmarshal JSON", tt.args.parameterJSON, err)
+			}
+			if !reflect.DeepEqual(parameter, tt.want) {
+				t.Errorf("parsePipelinePath() = \n%+v, want \n%+v", parameter, tt.want)
 			}
 		})
 	}
