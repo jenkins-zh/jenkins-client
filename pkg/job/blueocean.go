@@ -235,7 +235,7 @@ func (c *BlueOceanClient) getGetStepsAPI(option *GetStepsOption) string {
 	// api := c.getGetPipelineAPI(pipelineName, folders...)
 	api := c.getGetPipelineAPI(option.PipelineName, option.Folders...)
 	if option.Branch != "" {
-		api = api + "/branches/" + option.Branch
+		api = api + "/branches/" + url.PathEscape(option.Branch)
 	}
 	api = api + "/runs/" + option.RunID
 	if option.NodeID != "" {

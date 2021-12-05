@@ -706,6 +706,18 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			Expect(steps).NotTo(BeNil())
 			Expect(len(steps)).To(Equal(0))
 		})
+		It("Without folder but with branch with special character", func() {
+			option := GetStepsOption{
+				RunID:        "123",
+				PipelineName: "pipelineA",
+				Branch:       "release%2Fv3.2",
+			}
+			given("/blue/rest/organizations/jenkins/pipelines/pipelineA/branches/release%252Fv3.2/runs/123/steps/", 200, "[]")
+			steps, err := c.GetSteps(option)
+			Expect(err).To(Succeed())
+			Expect(steps).NotTo(BeNil())
+			Expect(len(steps)).To(Equal(0))
+		})
 		It("With one folder and branch", func() {
 			option := GetStepsOption{
 				RunID:        "123",
@@ -754,7 +766,6 @@ var _ = Describe("SimplePipeline test via BlueOcean RESTful API", func() {
 			Expect(steps).NotTo(BeNil())
 			Expect(len(steps)).To(Equal(0))
 		})
-
 	})
 
 	Context("GetBranches", func() {
