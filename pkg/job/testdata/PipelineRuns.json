@@ -44,7 +44,6 @@
       }
     },
     "actions": [
-
     ],
     "artifactsZipFile": null,
     "causeOfBlockage": null,
@@ -72,7 +71,6 @@
     "state": "FINISHED",
     "type": "WorkflowRun",
     "changeSet": [
-
     ],
     "branch": null,
     "commitId": null,

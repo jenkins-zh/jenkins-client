@@ -32,16 +32,22 @@ var _ = Describe("", func() {
 		casc.PrepareForSASCApply(roundTripper, cascManager.URL, "", "")
 		casc.PrepareForSASCExport(roundTripper, cascManager.URL, "", "")
 		casc.PrepareForSASCSchema(roundTripper, cascManager.URL, "", "")
+		casc.PrepareForCheckNewSource(roundTripper, cascManager.URL, "", "")
+		casc.PrepareForReplaceSource(roundTripper, cascManager.URL, "", "")
 
 		reloadErr := cascManager.Reload()
 		applyErr := cascManager.Apply()
 		config, exportErr := cascManager.Export()
 		schema, schemaErr := cascManager.Schema()
+		newSourceErr := cascManager.CheckNewSource("source")
+		replaceSourceErr := cascManager.Replace("source")
 
 		Expect(reloadErr).NotTo(HaveOccurred())
 		Expect(applyErr).NotTo(HaveOccurred())
 		Expect(exportErr).NotTo(HaveOccurred())
 		Expect(schemaErr).NotTo(HaveOccurred())
+		Expect(newSourceErr).NotTo(HaveOccurred())
+		Expect(replaceSourceErr).NotTo(HaveOccurred())
 
 		Expect(config).To(Equal("sample"))
 		Expect(schema).To(Equal("sample"))

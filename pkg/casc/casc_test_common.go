@@ -3,6 +3,10 @@ package casc
 import (
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
+
+	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
 
@@ -29,6 +33,33 @@ func PrepareForSASCExport(roundTripper *mhttp.MockRoundTripper, rootURL, user, p
 	request, _ := http.NewRequest(http.MethodPost,
 		fmt.Sprintf("%s/configuration-as-code/export", rootURL), nil)
 	response = core.PrepareCommonPost(request, "sample", roundTripper, user, password, rootURL)
+	return
+}
+
+// PrepareForCheckNewSource only for test
+func PrepareForCheckNewSource(roundTripper *mhttp.MockRoundTripper, rootURL, user, password string) (
+	response *http.Response) {
+	formValue := make(url.Values)
+	formValue.Set("newSource", "source")
+
+	request, _ := http.NewRequest(http.MethodPost,
+		fmt.Sprintf("%s/configuration-as-code/checkNewSource", rootURL), strings.NewReader(formValue.Encode()))
+	request.Header.Set(httpdownloader.ContentType, httpdownloader.ApplicationForm)
+	response = core.PrepareCommonPost(request, "sample", roundTripper, user, password, rootURL)
+	return
+}
+
+// PrepareForReplaceSource only for test
+func PrepareForReplaceSource(roundTripper *mhttp.MockRoundTripper, rootURL, user, password string) (
+	response *http.Response) {
+	formValue := make(url.Values)
+	formValue.Set("json", `{"newSource": "source"}`)
+	formValue.Set("_.newSource", "source")
+
+	request, _ := http.NewRequest(http.MethodPost,
+		fmt.Sprintf("%s/configuration-as-code/replace", rootURL), strings.NewReader(formValue.Encode()))
+	request.Header.Set(httpdownloader.ContentType, httpdownloader.ApplicationForm)
+	response = core.PrepareCommonPostWithResponseCode(request, "sample", http.StatusFound, roundTripper, user, password, rootURL)
 	return
 }
 
