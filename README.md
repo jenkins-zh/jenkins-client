@@ -151,5 +151,5 @@ Pay attention to the part of the Jenkins CLI, they need some special plugins. Pl
 
 ## Release
 
-This project takes advantage of [ks-releaser](https://github.com/kubesphere-sigs/ks-releaser/) to do the release job. Please file a Pull Request against [this repository](https://github.com/jenkins-zh/versions).
-
+This project takes advantage of [ks-releaser](https://github.com/kubesphere-sigs/ks-releaser/) to do the release job.
+Please file a Pull Request against [this repository](https://github.com/jenkins-zh/versions).

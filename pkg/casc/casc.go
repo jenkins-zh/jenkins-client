@@ -1,7 +1,10 @@
 package casc
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
 )
@@ -20,7 +23,7 @@ func (c *Manager) Export() (config string, err error) {
 
 	if statusCode, data, err = c.Request(http.MethodPost, "/configuration-as-code/export",
 		nil, nil); err == nil &&
-		statusCode != 200 {
+		statusCode != http.StatusOK {
 		err = c.ErrorHandle(statusCode, data)
 	}
 	config = string(data)
@@ -36,7 +39,7 @@ func (c *Manager) Schema() (schema string, err error) {
 
 	if statusCode, data, err = c.Request(http.MethodPost, "/configuration-as-code/schema",
 		nil, nil); err == nil &&
-		statusCode != 200 {
+		statusCode != http.StatusOK {
 		err = c.ErrorHandle(statusCode, data)
 	}
 	schema = string(data)
@@ -46,13 +49,40 @@ func (c *Manager) Schema() (schema string, err error) {
 // Reload reloads the config of configuration-as-code
 func (c *Manager) Reload() (err error) {
 	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/reload",
-		nil, nil, 200)
+		nil, nil, http.StatusOK)
 	return
 }
 
-// Apply apply the config of configuration-as-code
+// Replace replaces the new source
+func (c *Manager) Replace(source string) (err error) {
+	formValue := make(url.Values)
+	formValue.Set("json", fmt.Sprintf(`{"newSource": "%s"}`, source))
+	formValue.Set("_.newSource", source)
+
+	// Jenkins does not have a standard API. This is a form submit, so the expected code is not 200
+	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/replace",
+		core.AsFormRequest,
+		strings.NewReader(formValue.Encode()), http.StatusOK)
+	if urlErr, ok := err.(*url.Error); ok && urlErr.Err.Error() == "302 response missing Location header" {
+		err = nil
+	}
+	return
+}
+
+// CheckNewSource checks the new source of CasC
+func (c *Manager) CheckNewSource(source string) (err error) {
+	formValue := make(url.Values)
+	formValue.Set("newSource", source)
+
+	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/checkNewSource",
+		core.AsFormRequest,
+		strings.NewReader(formValue.Encode()), http.StatusOK)
+	return
+}
+
+// Apply applies the config of configuration-as-code
 func (c *Manager) Apply() (err error) {
 	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/apply",
-		nil, nil, 200)
+		nil, nil, http.StatusOK)
 	return
 }

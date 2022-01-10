@@ -28,7 +28,7 @@ categories:
       - 'kind/chore'
       - dependencies
   - title: '🚦 Tests'
-    labels: 
+    labels:
       - test
       - 'kind/test'
       - tests

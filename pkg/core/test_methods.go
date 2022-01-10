@@ -444,6 +444,13 @@ func PrepareForUpdatePipelineJob(roundTripper *mhttp.MockRoundTripper, rootURL, 
 // PrepareCommonPost only for test
 func PrepareCommonPost(request *http.Request, responseBody string, roundTripper *mhttp.MockRoundTripper, user, passwd, rootURL string) (
 	response *http.Response) {
+	response = PrepareCommonPostWithResponseCode(request, responseBody, http.StatusOK, roundTripper, user, passwd, rootURL)
+	return
+}
+
+// PrepareCommonPostWithResponseCode only for test
+func PrepareCommonPostWithResponseCode(request *http.Request, responseBody string, responseCode int, roundTripper *mhttp.MockRoundTripper, user, passwd, rootURL string) (
+	response *http.Response) {
 	// common crumb request
 	PrepareForGetIssuer(roundTripper, rootURL, user, passwd)
 
@@ -452,7 +459,7 @@ func PrepareCommonPost(request *http.Request, responseBody string, roundTripper 
 	}
 	request.Header.Add("CrumbRequestField", "Crumb")
 	response = &http.Response{
-		StatusCode: 200,
+		StatusCode: responseCode,
 		Request:    request,
 		Body:       ioutil.NopCloser(bytes.NewBufferString(responseBody)),
 	}
