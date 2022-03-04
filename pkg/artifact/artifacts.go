@@ -37,9 +37,9 @@ func (q *Client) List(jobName string, buildID int) (artifacts []Artifact, err er
 }
 
 // GetArtifact download artifact using stream
-func (q *Client) GetArtifact(projectName, pipelineName string, buildId int, filename string) (io.ReadCloser, error) {
-	artifactUrl := fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildId, filename)
-	resp, err := q.RequestWithResponse(http.MethodGet, artifactUrl, nil, nil)
+func (q *Client) GetArtifact(projectName, pipelineName string, buildID int, filename string) (io.ReadCloser, error) {
+	artifactURL := fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildID, filename)
+	resp, err := q.RequestWithResponse(http.MethodGet, artifactURL, nil, nil)
 	if err != nil {
 		return nil, err
 	}
