@@ -1,11 +1,12 @@
 package artifact
 
 import (
+	"io/ioutil"
+
 	"github.com/golang/mock/gomock"
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"io/ioutil"
 )
 
 var _ = Describe("artifacts test", func() {
@@ -70,7 +71,6 @@ var _ = Describe("artifacts test", func() {
 			PrepareGetArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
 			body, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
-			defer body.Close()
 			Expect(err).To(BeNil())
 			Expect(func() bool {
 				b, err := ioutil.ReadAll(body)

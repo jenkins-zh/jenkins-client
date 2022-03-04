@@ -64,8 +64,8 @@ func PrepareGetArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, pas
 }
 
 // PrepareGetNoExistsArtifact only for test
-func PrepareGetNoExistsArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, passwd, projectName, pipelineName string, buildId int, filename string) (response *http.Response) {
-	var api = fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildId, filename)
+func PrepareGetNoExistsArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, passwd, projectName, pipelineName string, buildID int, filename string) (response *http.Response) {
+	var api = fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildID, filename)
 	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", rootURL, api), nil)
 	response = &http.Response{
 		StatusCode: 404,
