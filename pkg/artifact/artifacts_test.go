@@ -5,6 +5,7 @@ import (
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
 )
 
 var _ = Describe("artifacts test", func() {
@@ -55,6 +56,42 @@ var _ = Describe("artifacts test", func() {
 			artifacts, err := artifactClient.List(jobName, 1)
 			Expect(err).To(BeNil())
 			Expect(len(artifacts)).To(Equal(0))
+		})
+	})
+
+	Context("GetArtifactStream", func() {
+		It("should success", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			PrepareGetArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
+
+			body, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
+			defer body.Close()
+			Expect(err).To(BeNil())
+			Expect(func() bool {
+				b, err := ioutil.ReadAll(body)
+				if err != nil {
+					return false
+				}
+				return len(b) > 0
+			}()).To(Equal(true))
+		})
+
+		It("should fail", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			PrepareGetNoExistsArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
+
+			_, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
+			Expect(err).Should(HaveOccurred())
 		})
 	})
 })

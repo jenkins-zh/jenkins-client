@@ -2,6 +2,7 @@ package artifact
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
@@ -33,4 +34,19 @@ func (q *Client) List(jobName string, buildID int) (artifacts []Artifact, err er
 	}
 	err = q.RequestWithData(http.MethodGet, api, nil, nil, 200, &artifacts)
 	return
+}
+
+// GetArtifact download artifact using stream
+func (q *Client) GetArtifact(projectName, pipelineName string, buildId int, filename string) (io.ReadCloser, error) {
+	artifactUrl := fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildId, filename)
+	resp, err := q.RequestWithResponse(http.MethodGet, artifactUrl, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get artifact. the HTTP status code is %d", resp.StatusCode)
+	}
+
+	return resp.Body, nil
 }
