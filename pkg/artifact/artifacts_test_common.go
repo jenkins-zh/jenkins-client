@@ -44,3 +44,39 @@ func PrepareGetEmptyArtifacts(roundTripper *mhttp.MockRoundTripper, rootURL, use
 	response.Body = ioutil.NopCloser(bytes.NewBufferString(`[]`))
 	return
 }
+
+// PrepareGetArtifact only for test
+func PrepareGetArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, passwd, projectName, pipelineName string, buildID int, filename string) (response *http.Response) {
+	var api = fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildID, filename)
+	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", rootURL, api), nil)
+	response = &http.Response{
+		StatusCode: 200,
+		Request:    request,
+		Body:       ioutil.NopCloser(bytes.NewBufferString(`this is test file`)),
+	}
+	roundTripper.EXPECT().
+		RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
+
+	if user != "" && passwd != "" {
+		request.SetBasicAuth(user, passwd)
+	}
+	return
+}
+
+// PrepareGetNoExistsArtifact only for test
+func PrepareGetNoExistsArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, passwd, projectName, pipelineName string, buildID int, filename string) (response *http.Response) {
+	var api = fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildID, filename)
+	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", rootURL, api), nil)
+	response = &http.Response{
+		StatusCode: 404,
+		Request:    request,
+		Body:       nil,
+	}
+	roundTripper.EXPECT().
+		RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
+
+	if user != "" && passwd != "" {
+		request.SetBasicAuth(user, passwd)
+	}
+	return
+}
