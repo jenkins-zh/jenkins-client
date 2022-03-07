@@ -52,7 +52,7 @@ func PrepareGetArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, pas
 	response = &http.Response{
 		StatusCode: 200,
 		Request:    request,
-		Body:       ioutil.NopCloser(bytes.NewBufferString(`the is test file`)),
+		Body:       ioutil.NopCloser(bytes.NewBufferString(`this is test file`)),
 	}
 	roundTripper.EXPECT().
 		RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
