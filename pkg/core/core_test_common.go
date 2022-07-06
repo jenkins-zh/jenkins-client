@@ -54,7 +54,7 @@ func PrepareForToJSON(roundTripper *mhttp.MockRoundTripper, rootURL, user, passw
 
 	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/pipeline-model-converter/toJson", rootURL), payload)
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	PrepareCommonPost(request, `{"status":"ok","data":{"result":"success","json":"json"}}`, roundTripper, user, password, rootURL)
+	PrepareCommonPost(request, `{"status":"ok","data":{"result":"success","json":{"a":"b"}}}`, roundTripper, user, password, rootURL)
 }
 
 // PrepareForToJenkinsfile only for test

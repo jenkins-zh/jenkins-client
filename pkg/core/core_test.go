@@ -141,7 +141,7 @@ var _ = Describe("core test", func() {
 		})
 		It("normal", func() {
 			Expect(err).To(BeNil())
-			Expect(result.GetResult()).To(Equal("json"))
+			Expect(result.GetResult()).To(Equal(`{"a":"b"}`))
 		})
 	})
 
