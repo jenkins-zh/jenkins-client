@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"strings"
@@ -65,13 +66,14 @@ type GenericResult interface {
 
 // JSONResult represents the JSON result
 type JSONResult struct {
-	Result string   `json:"result"`
-	JSON   string   `json:"json"`
-	Errors []string `json:"errors"`
+	Result string            `json:"result"`
+	JSON   map[string]string `json:"json"`
+	Errors []string          `json:"errors"`
 }
 
 func (r JSONResult) GetResult() string {
-	return r.JSON
+	data, _ := json.Marshal(r.JSON)
+	return string(data)
 }
 
 func (r JSONResult) GetErrors() []string {
