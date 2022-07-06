@@ -2,6 +2,8 @@ package core
 
 import (
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/util"
 	"go.uber.org/zap"
@@ -47,6 +49,44 @@ func (q *Client) Shutdown(safe bool) (err error) {
 	} else {
 		_, err = q.RequestWithoutData(http.MethodPost, "/exit", nil, nil, 200)
 	}
+	return
+}
+
+// JsonResult represents the JSON result
+type JsonResult struct {
+	Result string   `json:"result"`
+	JSON   string   `json:"json"`
+	Errors []string `json:"errors"`
+}
+
+// ToJson turns a Jenkinsfile to JSON format
+// Read details from https://github.com/jenkinsci/pipeline-model-definition-plugin/blob/master/EXTENDING.md
+func (q *Client) ToJson(jenkinsfile string) (result JsonResult, err error) {
+	payloadData := url.Values{"jenkinsfile": {jenkinsfile}}
+	payload := strings.NewReader(payloadData.Encode())
+
+	err = q.RequestWithData(http.MethodPost, "/pipeline-model-converter/toJson", map[string]string{
+		"Content-Type": "application/x-www-form-urlencoded",
+	}, payload, http.StatusOK, &result)
+	return
+}
+
+// JenkinsfileResult represents the Jenkinsfile result
+type JenkinsfileResult struct {
+	Result      string   `json:"result"`
+	Jenkinsfile string   `json:"jenkinsfile"`
+	Errors      []string `json:"errors"`
+}
+
+// ToJenkinsfile converts a JSON format data to Jenkinsfile
+// Read details from https://github.com/jenkinsci/pipeline-model-definition-plugin/blob/master/EXTENDING.md
+func (q *Client) ToJenkinsfile(data string) (result JenkinsfileResult, err error) {
+	payloadData := url.Values{"json": {data}}
+	payload := strings.NewReader(payloadData.Encode())
+
+	err = q.RequestWithData(http.MethodPost, "/pipeline-model-converter/toJenkinsfile", map[string]string{
+		"Content-Type": "application/x-www-form-urlencoded",
+	}, payload, http.StatusOK, &result)
 	return
 }
 
