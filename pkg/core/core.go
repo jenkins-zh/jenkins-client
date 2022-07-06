@@ -66,9 +66,9 @@ type GenericResult interface {
 
 // JSONResult represents the JSON result
 type JSONResult struct {
-	Result string            `json:"result"`
-	JSON   map[string]string `json:"json"`
-	Errors []string          `json:"errors"`
+	Result string                 `json:"result"`
+	JSON   map[string]interface{} `json:"json"`
+	Errors []string               `json:"errors"`
 }
 
 func (r JSONResult) GetResult() string {
