@@ -132,7 +132,7 @@ var _ = Describe("core test", func() {
 
 	Context("toJson", func() {
 		var (
-			result JSONResult
+			result GenericResult
 			err    error
 		)
 		JustBeforeEach(func() {
@@ -141,17 +141,13 @@ var _ = Describe("core test", func() {
 		})
 		It("normal", func() {
 			Expect(err).To(BeNil())
-			Expect(result).To(Equal(JSONResult{
-				Result: "success",
-				JSON:   "json",
-				Errors: nil,
-			}))
+			Expect(result.GetResult()).To(Equal("json"))
 		})
 	})
 
 	Context("toJenkinsfile", func() {
 		var (
-			result JenkinsfileResult
+			result GenericResult
 			err    error
 		)
 		JustBeforeEach(func() {
@@ -160,11 +156,7 @@ var _ = Describe("core test", func() {
 		})
 		It("normal", func() {
 			Expect(err).To(BeNil())
-			Expect(result).To(Equal(JenkinsfileResult{
-				Result:      "success",
-				Jenkinsfile: "jenkinsfile",
-				Errors:      nil,
-			}))
+			Expect(result.GetResult()).To(Equal("jenkinsfile"))
 		})
 	})
 })

@@ -54,7 +54,7 @@ func PrepareForToJSON(roundTripper *mhttp.MockRoundTripper, rootURL, user, passw
 
 	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/pipeline-model-converter/toJson", rootURL), payload)
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	PrepareCommonPost(request, `{"result":"success","json":"json"}`, roundTripper, user, password, rootURL)
+	PrepareCommonPost(request, `{"status":"ok","data":{"result":"success","json":"json"}}`, roundTripper, user, password, rootURL)
 }
 
 // PrepareForToJenkinsfile only for test
@@ -64,7 +64,7 @@ func PrepareForToJenkinsfile(roundTripper *mhttp.MockRoundTripper, rootURL, user
 
 	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/pipeline-model-converter/toJenkinsfile", rootURL), payload)
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	PrepareCommonPost(request, `{"result":"success","jenkinsfile":"jenkinsfile"}`, roundTripper, user, password, rootURL)
+	PrepareCommonPost(request, `{"status":"ok","data":{"result":"success","jenkinsfile":"jenkinsfile"}}`, roundTripper, user, password, rootURL)
 }
 
 // PrepareForGetIdentity only for test

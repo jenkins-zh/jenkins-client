@@ -52,6 +52,17 @@ func (q *Client) Shutdown(safe bool) (err error) {
 	return
 }
 
+type Result struct {
+	Status string        `json:"status"`
+	Data   GenericResult `json:"data"`
+}
+
+type GenericResult interface {
+	GetResult() string
+	GetErrors() []string
+	GetStatus() string
+}
+
 // JSONResult represents the JSON result
 type JSONResult struct {
 	Result string   `json:"result"`
@@ -59,15 +70,33 @@ type JSONResult struct {
 	Errors []string `json:"errors"`
 }
 
+func (r JSONResult) GetResult() string {
+	return r.JSON
+}
+
+func (r JSONResult) GetErrors() []string {
+	return r.Errors
+}
+
+func (r JSONResult) GetStatus() string {
+	return r.Result
+}
+
 // ToJSON turns a Jenkinsfile to JSON format
 // Read details from https://github.com/jenkinsci/pipeline-model-definition-plugin/blob/master/EXTENDING.md
-func (q *Client) ToJSON(jenkinsfile string) (result JSONResult, err error) {
+func (q *Client) ToJSON(jenkinsfile string) (result GenericResult, err error) {
 	payloadData := url.Values{"jenkinsfile": {jenkinsfile}}
 	payload := strings.NewReader(payloadData.Encode())
 
+	genericResult := &Result{
+		Data: &JSONResult{},
+	}
 	err = q.RequestWithData(http.MethodPost, "/pipeline-model-converter/toJson", map[string]string{
 		"Content-Type": "application/x-www-form-urlencoded",
-	}, payload, http.StatusOK, &result)
+	}, payload, http.StatusOK, genericResult)
+	if err == nil {
+		result = genericResult.Data
+	}
 	return
 }
 
@@ -78,15 +107,33 @@ type JenkinsfileResult struct {
 	Errors      []string `json:"errors"`
 }
 
+func (r JenkinsfileResult) GetResult() string {
+	return r.Jenkinsfile
+}
+
+func (r JenkinsfileResult) GetErrors() []string {
+	return r.Errors
+}
+
+func (r JenkinsfileResult) GetStatus() string {
+	return r.Result
+}
+
 // ToJenkinsfile converts a JSON format data to Jenkinsfile
 // Read details from https://github.com/jenkinsci/pipeline-model-definition-plugin/blob/master/EXTENDING.md
-func (q *Client) ToJenkinsfile(data string) (result JenkinsfileResult, err error) {
+func (q *Client) ToJenkinsfile(data string) (result GenericResult, err error) {
 	payloadData := url.Values{"json": {data}}
 	payload := strings.NewReader(payloadData.Encode())
 
+	genericResult := &Result{
+		Data: &JenkinsfileResult{},
+	}
 	err = q.RequestWithData(http.MethodPost, "/pipeline-model-converter/toJenkinsfile", map[string]string{
 		"Content-Type": "application/x-www-form-urlencoded",
-	}, payload, http.StatusOK, &result)
+	}, payload, http.StatusOK, genericResult)
+	if err == nil {
+		result = genericResult.Data
+	}
 	return
 }
 
