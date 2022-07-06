@@ -132,16 +132,16 @@ var _ = Describe("core test", func() {
 
 	Context("toJson", func() {
 		var (
-			result JsonResult
+			result JSONResult
 			err    error
 		)
 		JustBeforeEach(func() {
 			PrepareForToJSON(roundTripper, coreClient.URL, username, password)
-			result, err = coreClient.ToJson("jenkinsfile")
+			result, err = coreClient.ToJSON("jenkinsfile")
 		})
 		It("normal", func() {
 			Expect(err).To(BeNil())
-			Expect(result).To(Equal(JsonResult{
+			Expect(result).To(Equal(JSONResult{
 				Result: "success",
 				JSON:   "json",
 				Errors: nil,

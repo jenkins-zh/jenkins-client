@@ -52,16 +52,16 @@ func (q *Client) Shutdown(safe bool) (err error) {
 	return
 }
 
-// JsonResult represents the JSON result
-type JsonResult struct {
+// JSONResult represents the JSON result
+type JSONResult struct {
 	Result string   `json:"result"`
 	JSON   string   `json:"json"`
 	Errors []string `json:"errors"`
 }
 
-// ToJson turns a Jenkinsfile to JSON format
+// ToJSON turns a Jenkinsfile to JSON format
 // Read details from https://github.com/jenkinsci/pipeline-model-definition-plugin/blob/master/EXTENDING.md
-func (q *Client) ToJson(jenkinsfile string) (result JsonResult, err error) {
+func (q *Client) ToJSON(jenkinsfile string) (result JSONResult, err error) {
 	payloadData := url.Values{"jenkinsfile": {jenkinsfile}}
 	payload := strings.NewReader(payloadData.Encode())
 
