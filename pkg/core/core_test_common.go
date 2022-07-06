@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 )
@@ -43,6 +45,26 @@ func PrepareForCancelShutdown(roundTripper *mhttp.MockRoundTripper, rootURL, use
 		request, _ = http.NewRequest(http.MethodPost, fmt.Sprintf("%s/quietDown", rootURL), nil)
 	}
 	PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
+}
+
+// PrepareForToJSON only for test
+func PrepareForToJSON(roundTripper *mhttp.MockRoundTripper, rootURL, user, password string) {
+	payloadData := url.Values{"jenkinsfile": {"jenkinsfile"}}
+	payload := strings.NewReader(payloadData.Encode())
+
+	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/pipeline-model-converter/toJson", rootURL), payload)
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	PrepareCommonPost(request, `{"status":"ok","data":{"result":"success","json":{"a":"b"}}}`, roundTripper, user, password, rootURL)
+}
+
+// PrepareForToJenkinsfile only for test
+func PrepareForToJenkinsfile(roundTripper *mhttp.MockRoundTripper, rootURL, user, password string) {
+	payloadData := url.Values{"json": {"json"}}
+	payload := strings.NewReader(payloadData.Encode())
+
+	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/pipeline-model-converter/toJenkinsfile", rootURL), payload)
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	PrepareCommonPost(request, `{"status":"ok","data":{"result":"success","jenkinsfile":"jenkinsfile"}}`, roundTripper, user, password, rootURL)
 }
 
 // PrepareForGetIdentity only for test

@@ -129,4 +129,34 @@ var _ = Describe("core test", func() {
 			})
 		})
 	})
+
+	Context("toJson", func() {
+		var (
+			result GenericResult
+			err    error
+		)
+		JustBeforeEach(func() {
+			PrepareForToJSON(roundTripper, coreClient.URL, username, password)
+			result, err = coreClient.ToJSON("jenkinsfile")
+		})
+		It("normal", func() {
+			Expect(err).To(BeNil())
+			Expect(result.GetResult()).To(Equal(`{"a":"b"}`))
+		})
+	})
+
+	Context("toJenkinsfile", func() {
+		var (
+			result GenericResult
+			err    error
+		)
+		JustBeforeEach(func() {
+			PrepareForToJenkinsfile(roundTripper, coreClient.URL, username, password)
+			result, err = coreClient.ToJenkinsfile("json")
+		})
+		It("normal", func() {
+			Expect(err).To(BeNil())
+			Expect(result.GetResult()).To(Equal("jenkinsfile"))
+		})
+	})
 })
