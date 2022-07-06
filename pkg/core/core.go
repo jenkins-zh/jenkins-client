@@ -53,11 +53,13 @@ func (q *Client) Shutdown(safe bool) (err error) {
 	return
 }
 
+// Result represents a generic result
 type Result struct {
 	Status string        `json:"status"`
 	Data   GenericResult `json:"data"`
 }
 
+// GenericResult represents a generic result interface
 type GenericResult interface {
 	GetResult() string
 	GetErrors() []string
@@ -71,15 +73,18 @@ type JSONResult struct {
 	Errors []string               `json:"errors"`
 }
 
+// GetResult returns the result of this object
 func (r JSONResult) GetResult() string {
 	data, _ := json.Marshal(r.JSON)
 	return string(data)
 }
 
+// GetErrors returns the errors
 func (r JSONResult) GetErrors() []string {
 	return r.Errors
 }
 
+// GetStatus returns the status
 func (r JSONResult) GetStatus() string {
 	return r.Result
 }
@@ -109,14 +114,17 @@ type JenkinsfileResult struct {
 	Errors      []string `json:"errors"`
 }
 
+// GetResult returns the result
 func (r JenkinsfileResult) GetResult() string {
 	return r.Jenkinsfile
 }
 
+// GetErrors returns the errors
 func (r JenkinsfileResult) GetErrors() []string {
 	return r.Errors
 }
 
+// GetStatus returns the status
 func (r JenkinsfileResult) GetStatus() string {
 	return r.Result
 }
