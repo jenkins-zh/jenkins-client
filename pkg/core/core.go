@@ -153,6 +153,14 @@ type LabelsResponse struct {
 	Data   []AgentLabel `json:"data"`
 }
 
+// GetLabels returns the labels with string array format
+func (l *LabelsResponse) GetLabels() (labels []string) {
+	for i := range l.Data {
+		labels = append(labels, l.Data[i].Label)
+	}
+	return
+}
+
 // AgentLabel represents a label object of the Jenkins agent
 type AgentLabel struct {
 	CloudsCount                    int      `json:"cloudsCount"`

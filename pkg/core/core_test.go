@@ -3,6 +3,8 @@ package core
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
+	"reflect"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -192,3 +194,41 @@ var _ = Describe("core test", func() {
 		})
 	})
 })
+
+func TestLabelsResponse_GetLabels(t *testing.T) {
+	type fields struct {
+		Status string
+		Data   []AgentLabel
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		wantLabels []string
+	}{{
+		name: "normal case",
+		fields: fields{
+			Status: "",
+			Data: []AgentLabel{{
+				Label: "good",
+			}, {
+				Label: "bad",
+			}},
+		},
+		wantLabels: []string{"good", "bad"},
+	}, {
+		name:       "no data field",
+		fields:     fields{},
+		wantLabels: nil,
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &LabelsResponse{
+				Status: tt.fields.Status,
+				Data:   tt.fields.Data,
+			}
+			if gotLabels := l.GetLabels(); !reflect.DeepEqual(gotLabels, tt.wantLabels) {
+				t.Errorf("GetLabels() = %v, want %v", gotLabels, tt.wantLabels)
+			}
+		})
+	}
+}
