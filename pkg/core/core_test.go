@@ -1,10 +1,11 @@
 package core
 
 import (
-	"github.com/golang/mock/gomock"
-	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	"reflect"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -174,6 +175,7 @@ var _ = Describe("core test", func() {
 		})
 		It("normal", func() {
 			Expect(err).To(BeNil())
+			Expect(labels.GetLabels()).To(Equal([]string{"java"}))
 			Expect(labels).To(Equal(&LabelsResponse{
 				Status: "ok",
 				Data: []AgentLabel{{

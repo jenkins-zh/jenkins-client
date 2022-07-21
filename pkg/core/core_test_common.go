@@ -98,7 +98,7 @@ func PrepareForToGetLabels(roundTripper *mhttp.MockRoundTripper, rootURL, user, 
 }`)),
 	}
 	roundTripper.EXPECT().
-		RoundTrip(NewVerboseRequestMatcher(request).WithBody().WithQuery()).Return(response, nil)
+		RoundTrip(NewVerboseRequestMatcher(request).WithBody().WithQuery()).Return(response, nil).AnyTimes()
 }
 
 // PrepareForGetIdentity only for test
