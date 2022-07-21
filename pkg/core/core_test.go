@@ -3,6 +3,7 @@ package core
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -157,6 +158,37 @@ var _ = Describe("core test", func() {
 		It("normal", func() {
 			Expect(err).To(BeNil())
 			Expect(result.GetResult()).To(Equal("jenkinsfile"))
+		})
+	})
+
+	Context("GetLabels", func() {
+		var (
+			labels *LabelsResponse
+			err    error
+		)
+		JustBeforeEach(func() {
+			PrepareForToGetLabels(roundTripper, coreClient.URL, username, password)
+			labels, err = coreClient.GetLabels()
+		})
+		It("normal", func() {
+			Expect(err).To(BeNil())
+			Expect(labels).To(Equal(&LabelsResponse{
+				Status: "ok",
+				Data: []AgentLabel{{
+					CloudsCount:                    0,
+					Description:                    "",
+					HasMoreThanOneJob:              false,
+					JobsCount:                      0,
+					JobsWithLabelDefaultValue:      []string{},
+					JobsWithLabelDefaultValueCount: 0,
+					Label:                          "java",
+					LabelURL:                       "label/java/",
+					NodesCount:                     1,
+					PluginActiveForLabel:           false,
+					TriggeredJobs:                  []string{},
+					TriggeredJobsCount:             0,
+				}},
+			}))
 		})
 	})
 })

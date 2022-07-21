@@ -147,6 +147,36 @@ func (q *Client) ToJenkinsfile(data string) (result GenericResult, err error) {
 	return
 }
 
+// LabelsResponse represents the response from the labels request
+type LabelsResponse struct {
+	Status string       `json:"status"`
+	Data   []AgentLabel `json:"data"`
+}
+
+// AgentLabel represents a label object of the Jenkins agent
+type AgentLabel struct {
+	CloudsCount                    int      `json:"cloudsCount"`
+	Description                    string   `json:"description"`
+	HasMoreThanOneJob              bool     `json:"hasMoreThanOneJob"`
+	JobsCount                      int      `json:"jobsCount"`
+	JobsWithLabelDefaultValue      []string `json:"jobsWithLabelDefaultValue"`
+	JobsWithLabelDefaultValueCount int      `json:"jobsWithLabelDefaultValueCount"`
+	Label                          string   `json:"label"`
+	LabelURL                       string   `json:"labelURL"`
+	NodesCount                     int      `json:"nodesCount"`
+	PluginActiveForLabel           bool     `json:"pluginActiveForLabel"`
+	TriggeredJobs                  []string `json:"triggeredJobs"`
+	TriggeredJobsCount             int      `json:"triggeredJobsCount"`
+}
+
+// GetLabels returns the labels of all the Jenkins agents
+// Read details from https://github.com/jenkinsci/label-linked-jobs-plugin
+func (q *Client) GetLabels() (labelsRes *LabelsResponse, err error) {
+	labelsRes = &LabelsResponse{}
+	err = q.RequestWithData(http.MethodGet, "/labelsdashboard/labelsData", nil, nil, http.StatusOK, labelsRes)
+	return
+}
+
 // PrepareShutdown Put Jenkins in a Quiet mode, in preparation for a restart. In that mode Jenkins don’t start any build
 func (q *Client) PrepareShutdown(cancel bool) (err error) {
 	if cancel {

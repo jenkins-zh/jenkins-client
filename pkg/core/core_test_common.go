@@ -67,6 +67,40 @@ func PrepareForToJenkinsfile(roundTripper *mhttp.MockRoundTripper, rootURL, user
 	PrepareCommonPost(request, `{"status":"ok","data":{"result":"success","jenkinsfile":"jenkinsfile"}}`, roundTripper, user, password, rootURL)
 }
 
+// PrepareForToGetLabels only for test
+func PrepareForToGetLabels(roundTripper *mhttp.MockRoundTripper, rootURL, user, password string) {
+	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/labelsdashboard/labelsData", rootURL), nil)
+	if user != "" && password != "" {
+		request.SetBasicAuth(user, password)
+	}
+	response := &http.Response{
+		StatusCode: http.StatusOK,
+		Request:    request,
+		Body: ioutil.NopCloser(bytes.NewBufferString(`{
+  "status": "ok",
+  "data": [
+    {
+      "cloudsCount": 0,
+      "description": "",
+      "hasMoreThanOneJob": false,
+      "jobs": [],
+      "jobsCount": 0,
+      "jobsWithLabelDefaultValue": [],
+      "jobsWithLabelDefaultValueCount": 0,
+      "label": "java",
+      "labelURL": "label/java/",
+      "nodesCount": 1,
+      "pluginActiveForLabel": false,
+      "triggeredJobs": [],
+      "triggeredJobsCount": 0
+    }
+  ]
+}`)),
+	}
+	roundTripper.EXPECT().
+		RoundTrip(NewVerboseRequestMatcher(request).WithBody().WithQuery()).Return(response, nil)
+}
+
 // PrepareForGetIdentity only for test
 func PrepareForGetIdentity(roundTripper *mhttp.MockRoundTripper, rootURL, user, password string) {
 	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/instance", rootURL), nil)
