@@ -1,8 +1,12 @@
 package core
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -159,4 +163,74 @@ var _ = Describe("core test", func() {
 			Expect(result.GetResult()).To(Equal("jenkinsfile"))
 		})
 	})
+
+	Context("GetLabels", func() {
+		var (
+			labels *LabelsResponse
+			err    error
+		)
+		JustBeforeEach(func() {
+			PrepareForToGetLabels(roundTripper, coreClient.URL, username, password)
+			labels, err = coreClient.GetLabels()
+		})
+		It("normal", func() {
+			Expect(err).To(BeNil())
+			Expect(labels.GetLabels()).To(Equal([]string{"java"}))
+			Expect(labels).To(Equal(&LabelsResponse{
+				Status: "ok",
+				Data: []AgentLabel{{
+					CloudsCount:                    0,
+					Description:                    "",
+					HasMoreThanOneJob:              false,
+					JobsCount:                      0,
+					JobsWithLabelDefaultValue:      []string{},
+					JobsWithLabelDefaultValueCount: 0,
+					Label:                          "java",
+					LabelURL:                       "label/java/",
+					NodesCount:                     1,
+					PluginActiveForLabel:           false,
+					TriggeredJobs:                  []string{},
+					TriggeredJobsCount:             0,
+				}},
+			}))
+		})
+	})
 })
+
+func TestLabelsResponse_GetLabels(t *testing.T) {
+	type fields struct {
+		Status string
+		Data   []AgentLabel
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		wantLabels []string
+	}{{
+		name: "normal case",
+		fields: fields{
+			Status: "",
+			Data: []AgentLabel{{
+				Label: "good",
+			}, {
+				Label: "bad",
+			}},
+		},
+		wantLabels: []string{"good", "bad"},
+	}, {
+		name:       "no data field",
+		fields:     fields{},
+		wantLabels: nil,
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &LabelsResponse{
+				Status: tt.fields.Status,
+				Data:   tt.fields.Data,
+			}
+			if gotLabels := l.GetLabels(); !reflect.DeepEqual(gotLabels, tt.wantLabels) {
+				t.Errorf("GetLabels() = %v, want %v", gotLabels, tt.wantLabels)
+			}
+		})
+	}
+}
