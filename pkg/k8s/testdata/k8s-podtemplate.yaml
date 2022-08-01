@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: PodTemplate
+metadata:
+  name: base
+  namespace: default
+  annotations:
+    container.base.resourceRequestCpu: "100m"
+    container.base.resourceLimitCpu: "4000m"
+    container.base.resourceRequestMemory: "100Mi"
+    container.base.resourceLimitMemory: "8192Mi"
+    container.base.yaml: "fake"
+    container.jnlp.resourceRequestCpu: "50m"
+    container.jnlp.resourceLimitCpu: "500m"
+    container.jnlp.resourceRequestMemory: "400Mi"
+    container.jnlp.resourceLimitMemory: "1536Mi"
+template:
+  metadata:
+    name: base
+  spec:
+    volumes:
+      - name: docker
+        hostPath:
+          path: /var/run/docker.sock
+      - name: gocache
+        hostPath:
+          path: /var/data/jenkins_go_cache
+      - name: sonarcache
+        hostPath:
+          path: /var/data/jenkins_sonar_cache
+    containers:
+      - name: base
+        image: kubesphere/builder-base:v3.2.0
+        command: ["cat"]
+        args: [""]
+        volumeMounts:
+          - name: docker
+            mountPath: /var/run/docker.sock
+          - name: gocache
+            mountPath: /home/jenkins/go/pkg
+          - name: sonarcache
+            mountPath: /root/.sonar/cache
