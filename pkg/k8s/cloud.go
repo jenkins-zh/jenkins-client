@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	unstructured "github.com/linuxsuren/unstructured/pkg"
@@ -81,14 +80,14 @@ func ConvertToJenkinsPodTemplate(podTemplate *v1.PodTemplate) (target JenkinsPod
 				Image:                 container.Image,
 				Command:               strings.Join(container.Command, " "),
 				Args:                  strings.Join(container.Args, " "),
-				ResourceLimitCPU:      annotations[fmt.Sprintf("container.%s.resourceLimitCpu", name)],
-				ResourceLimitMemory:   annotations[fmt.Sprintf("container.%s.resourceLimitMemory", name)],
-				ResourceRequestCPU:    annotations[fmt.Sprintf("container.%s.resourceRequestCpu", name)],
-				ResourceRequestMemory: annotations[fmt.Sprintf("container.%s.resourceRequestMemory", name)],
-				YAML:                  annotations[fmt.Sprintf("container.%s.yaml", name)],
+				ResourceLimitCPU:      annotations[fmt.Sprintf("containers.%s.resourceLimitCpu", name)],
+				ResourceLimitMemory:   annotations[fmt.Sprintf("containers.%s.resourceLimitMemory", name)],
+				ResourceRequestCPU:    annotations[fmt.Sprintf("containers.%s.resourceRequestCpu", name)],
+				ResourceRequestMemory: annotations[fmt.Sprintf("containers.%s.resourceRequestMemory", name)],
 				TtyEnabled:            true,
 			}
 		}
+		target.YAML = annotations["containers.yaml"]
 
 		container := containers[0]
 		for _, volMount := range container.VolumeMounts {
@@ -129,7 +128,6 @@ func (c *JenkinsConfig) RemovePodTemplate(name string) (err error) {
 		for i, templateObj := range templateArray {
 			var template map[string]interface{}
 			if template, ok = templateObj.(map[string]interface{}); ok {
-				fmt.Println("=====", template["name"], reflect.TypeOf(template["name"]), name)
 				if template["name"].(string) == name {
 					if i == len(template)-1 {
 						templateArray = templateArray[0:i]
@@ -182,6 +180,9 @@ type JenkinsPodTemplate struct {
 	IdleMinutes   int         `json:"idleMinutes"`
 	Containers    []Container `json:"containers"`
 	Volumes       []Volume    `json:"volumes"`
+	// YAML is the YAML format for merging into the whole PodTemplate
+	YAML            string          `json:"yaml"`
+	WorkspaceVolume WorkspaceVolume `json:"workspaceVolume"`
 }
 
 // Volume represents the volume in kubernetes
@@ -191,20 +192,16 @@ type Volume struct {
 
 // Container represents the container that defined in Jenkins
 type Container struct {
-	Name                  string           `json:"name"`
-	Image                 string           `json:"image"`
-	Command               string           `json:"command"`
-	Args                  string           `json:"args"`
-	TtyEnabled            bool             `json:"ttyEnabled"`
-	Privileged            bool             `json:"privileged"`
-	ResourceRequestCPU    string           `json:"resourceRequestCpu"`
-	ResourceLimitCPU      string           `json:"resourceLimitCpu"`
-	ResourceRequestMemory string           `json:"resourceRequestMemory"`
-	ResourceLimitMemory   string           `json:"resourceLimitMemory"`
-	WorkspaceVolume       WorkspaceVolume  `json:"workspaceVolume"`
-	Volumes               []HostPathVolume `json:"volumes"`
-	// YAML is the YAML format for merging into the whole PodTemplate
-	YAML string `json:"yaml"`
+	Name                  string `json:"name"`
+	Image                 string `json:"image"`
+	Command               string `json:"command"`
+	Args                  string `json:"args"`
+	TtyEnabled            bool   `json:"ttyEnabled"`
+	Privileged            bool   `json:"privileged"`
+	ResourceRequestCPU    string `json:"resourceRequestCpu"`
+	ResourceLimitCPU      string `json:"resourceLimitCpu"`
+	ResourceRequestMemory string `json:"resourceRequestMemory"`
+	ResourceLimitMemory   string `json:"resourceLimitMemory"`
 }
 
 // WorkspaceVolume is the volume of the Jenkins agent workspace

@@ -63,10 +63,6 @@ jenkins:
           resourceRequestMemory: 100Mi
           ttyEnabled: true
           volumes: null
-          workspaceVolume:
-            emptyDirWorkspaceVolume:
-              memory: false
-          yaml: fake
         idleMinutes: 0
         label: base
         name: base
@@ -82,6 +78,10 @@ jenkins:
         - hostPathVolume:
             hostPath: /var/data/jenkins_sonar_cache
             mountPath: /root/.sonar/cache
+        workspaceVolume:
+          emptyDirWorkspaceVolume:
+            memory: false
+        yaml: fake
   disableRememberMe: true
   mode: EXCLUSIVE
   numExecutors: 0

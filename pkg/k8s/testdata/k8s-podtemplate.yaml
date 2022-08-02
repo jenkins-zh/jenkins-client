@@ -4,15 +4,15 @@ metadata:
   name: base
   namespace: default
   annotations:
-    container.base.resourceRequestCpu: "100m"
-    container.base.resourceLimitCpu: "4000m"
-    container.base.resourceRequestMemory: "100Mi"
-    container.base.resourceLimitMemory: "8192Mi"
-    container.base.yaml: "fake"
-    container.jnlp.resourceRequestCpu: "50m"
-    container.jnlp.resourceLimitCpu: "500m"
-    container.jnlp.resourceRequestMemory: "400Mi"
-    container.jnlp.resourceLimitMemory: "1536Mi"
+    containers.base.resourceRequestCpu: "100m"
+    containers.base.resourceLimitCpu: "4000m"
+    containers.base.resourceRequestMemory: "100Mi"
+    containers.base.resourceLimitMemory: "8192Mi"
+    containers.jnlp.resourceRequestCpu: "50m"
+    containers.jnlp.resourceLimitCpu: "500m"
+    containers.jnlp.resourceRequestMemory: "400Mi"
+    containers.jnlp.resourceLimitMemory: "1536Mi"
+    containers.yaml: "fake"
 template:
   metadata:
     name: base
