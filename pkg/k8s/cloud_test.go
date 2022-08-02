@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"io/ioutil"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -92,37 +91,4 @@ func readFile(file string) (data []byte) {
 
 func readFileASString(file string) string {
 	return string(readFile(file))
-}
-
-func TestJenkinsConfig_getJSON(t *testing.T) {
-	type fields struct {
-		Config []byte
-	}
-	tests := []struct {
-		name     string
-		fields   fields
-		wantData []byte
-		wantErr  bool
-	}{{
-		name: "normal",
-		fields: fields{Config: []byte(`name: name
-server: server`)},
-		wantData: []byte(`{"name":"name","server":"server"}`),
-		wantErr:  false,
-	}}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &JenkinsConfig{
-				Config: tt.fields.Config,
-			}
-			gotData, err := c.getJSON()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getJSON() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotData, tt.wantData) {
-				t.Errorf("getJSON() gotData = %v, wantVal %v", gotData, tt.wantData)
-			}
-		})
-	}
 }

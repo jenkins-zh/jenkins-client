@@ -15,6 +15,7 @@ type JenkinsConfig struct {
 	Config []byte
 }
 
+// GetConfigAsString returns the config data as string
 func (c *JenkinsConfig) GetConfigAsString() string {
 	return string(c.Config)
 }
@@ -55,6 +56,7 @@ func (c *JenkinsConfig) AddPodTemplate(podTemplate *v1.PodTemplate) (err error) 
 	return
 }
 
+// ConvertToJenkinsPodTemplate converts a k8s style PodTemplate to a Jenkins style PodTemplate
 func ConvertToJenkinsPodTemplate(podTemplate *v1.PodTemplate) (target JenkinsPodTemplate, err error) {
 	target.Name = podTemplate.Name
 	target.Namespace = podTemplate.Namespace
@@ -150,11 +152,6 @@ func (c *JenkinsConfig) RemovePodTemplate(name string) (err error) {
 	return
 }
 
-func (c *JenkinsConfig) getJSON() (data []byte, err error) {
-	data, err = yaml.YAMLToJSON(c.Config)
-	return
-}
-
 // CloudAgent represents a Jenkins cloud agent
 type CloudAgent struct {
 	Kubernetes KubernetesCloud `json:"kubernetes"`
@@ -187,6 +184,7 @@ type JenkinsPodTemplate struct {
 	Volumes       []Volume    `json:"volumes"`
 }
 
+// Volume represents the volume in kubernetes
 type Volume struct {
 	HostPathVolume HostPathVolume `json:"hostPathVolume"`
 }
