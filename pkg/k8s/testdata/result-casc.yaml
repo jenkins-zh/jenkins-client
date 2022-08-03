@@ -57,13 +57,14 @@ jenkins:
           image: kubesphere/builder-base:v3.2.0
           name: base
           privileged: false
-          resourceLimitCpu: 4000m
-          resourceLimitMemory: 8192Mi
+          resourceLimitCpu: "4"
+          resourceLimitMemory: 8Gi
           resourceRequestCpu: 100m
           resourceRequestMemory: 100Mi
           ttyEnabled: true
         idleMinutes: 0
-        label: base
+        inheritFrom: base
+        label: go newbase base
         name: base
         namespace: default
         nodeUsageMode: EXCLUSIVE

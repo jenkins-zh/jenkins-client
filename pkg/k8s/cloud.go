@@ -73,6 +73,18 @@ func ConvertToJenkinsPodTemplate(podTemplate *v1.PodTemplate) (target JenkinsPod
 	}
 	annotations := podTemplate.Annotations
 
+	// set the Jenkins agent labels
+	if val, ok := annotations["jenkins.agent.labels"]; ok && val != "" {
+		labels := strings.Split(val, " ")
+		labels = append(labels, podTemplate.Name)
+		target.Label = strings.Join(labels, " ")
+	}
+
+	// set the template level fields
+	target.YAML = annotations["containers.yaml"]
+	target.InheritFrom = annotations["inherit.from"]
+
+	// convert the containers
 	containers := podTemplate.Template.Spec.Containers
 	containersCount := len(containers)
 	if containersCount > 0 {
@@ -80,19 +92,30 @@ func ConvertToJenkinsPodTemplate(podTemplate *v1.PodTemplate) (target JenkinsPod
 
 		for i, container := range containers {
 			name := container.Name
-			target.Containers[i] = Container{
-				Name:                  name,
-				Image:                 container.Image,
-				Command:               strings.Join(container.Command, " "),
-				Args:                  strings.Join(container.Args, " "),
-				ResourceLimitCPU:      annotations[fmt.Sprintf("containers.%s.resourceLimitCpu", name)],
-				ResourceLimitMemory:   annotations[fmt.Sprintf("containers.%s.resourceLimitMemory", name)],
-				ResourceRequestCPU:    annotations[fmt.Sprintf("containers.%s.resourceRequestCpu", name)],
-				ResourceRequestMemory: annotations[fmt.Sprintf("containers.%s.resourceRequestMemory", name)],
-				TtyEnabled:            true,
+
+			jenkinsAgentContainer := Container{
+				Name:       name,
+				Image:      container.Image,
+				Command:    strings.Join(container.Command, " "),
+				Args:       strings.Join(container.Args, " "),
+				TtyEnabled: true,
 			}
+
+			if mem := container.Resources.Requests.Memory(); mem != nil && !mem.IsZero() {
+				jenkinsAgentContainer.ResourceRequestMemory = mem.String()
+			}
+			if mem := container.Resources.Limits.Memory(); mem != nil && !mem.IsZero() {
+				jenkinsAgentContainer.ResourceLimitMemory = mem.String()
+			}
+			if cpu := container.Resources.Requests.Cpu(); cpu != nil && !cpu.IsZero() {
+				jenkinsAgentContainer.ResourceRequestCPU = cpu.String()
+			}
+			if cpu := container.Resources.Limits.Cpu(); cpu != nil && !cpu.IsZero() {
+				jenkinsAgentContainer.ResourceLimitCPU = cpu.String()
+			}
+
+			target.Containers[i] = jenkinsAgentContainer
 		}
-		target.YAML = annotations["containers.yaml"]
 
 		container := containers[0]
 		for _, volMount := range container.VolumeMounts {
@@ -181,6 +204,7 @@ type JenkinsPodTemplate struct {
 	NodeUsageMode string      `json:"nodeUsageMode"`
 	IdleMinutes   int         `json:"idleMinutes"`
 	Containers    []Container `json:"containers"`
+	InheritFrom   string      `json:"inheritFrom,omitempty"`
 	Volumes       []Volume    `json:"volumes"`
 	// YAML is the YAML format for merging into the whole PodTemplate
 	YAML            string          `json:"yaml"`

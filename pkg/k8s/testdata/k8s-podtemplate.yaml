@@ -4,14 +4,8 @@ metadata:
   name: base
   namespace: default
   annotations:
-    containers.base.resourceRequestCpu: "100m"
-    containers.base.resourceLimitCpu: "4000m"
-    containers.base.resourceRequestMemory: "100Mi"
-    containers.base.resourceLimitMemory: "8192Mi"
-    containers.jnlp.resourceRequestCpu: "50m"
-    containers.jnlp.resourceLimitCpu: "500m"
-    containers.jnlp.resourceRequestMemory: "400Mi"
-    containers.jnlp.resourceLimitMemory: "1536Mi"
+    jenkins.agent.labels: "go newbase"
+    inherit.from: "base"
     containers.yaml: "fake"
 template:
   metadata:
@@ -32,6 +26,13 @@ template:
         image: kubesphere/builder-base:v3.2.0
         command: ["cat"]
         args: [""]
+        resources:
+          limits:
+            memory: 8192Mi
+            cpu: 4000m
+          requests:
+            memory: 100Mi
+            cpu: 100m
         volumeMounts:
           - name: docker
             mountPath: /var/run/docker.sock
