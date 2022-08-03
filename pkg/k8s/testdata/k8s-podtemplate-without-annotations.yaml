@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PodTemplate
+metadata:
+  name: base
+  namespace: default
+template:
+  metadata:
+    name: base
+  spec:
+    volumes:
+      - name: docker
+        hostPath:
+          path: /var/run/docker.sock
+      - name: gocache
+        hostPath:
+          path: /var/data/jenkins_go_cache
+      - name: sonarcache
+        hostPath:
+          path: /var/data/jenkins_sonar_cache
+    containers:
+      - name: base
+        image: kubesphere/builder-base:v3.2.0
+        command: ["cat"]
+        args: [""]
+        volumeMounts:
+          - name: docker
+            mountPath: /var/run/docker.sock
+          - name: gocache
+            mountPath: /home/jenkins/go/pkg
+          - name: sonarcache
+            mountPath: /root/.sonar/cache

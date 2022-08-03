@@ -1,0 +1,47 @@
+name: "kubernetes"
+serverUrl: "https://kubernetes.default"
+skipTlsVerify: true
+namespace: "kubesphere-devops-worker"
+credentialsId: "k8s-service-account"
+jenkinsUrl: "http://devops-jenkins.kubesphere-devops-system:80"
+jenkinsTunnel: "devops-jenkins-agent.kubesphere-devops-system:50000"
+containerCapStr: "4"
+connectTimeout: "60"
+readTimeout: "60"
+maxRequestsPerHostStr: "32"
+templates:
+  - name: "base"
+    namespace: "kubesphere-devops-worker"
+    label: "base"
+    nodeUsageMode: "NORMAL"
+    idleMinutes: 0
+    containers:
+      - name: "base"
+        image: "kubesphere/builder-base:v3.2.0"
+        command: "cat"
+        args: ""
+        ttyEnabled: true
+        privileged: false
+        resourceRequestCpu: "100m"
+        resourceLimitCpu: "4000m"
+        resourceRequestMemory: "100Mi"
+        resourceLimitMemory: "8192Mi"
+      - name: "jnlp"
+        image: "jenkins/jnlp-slave:3.27-1"
+        command: "jenkins-slave"
+        args: "^${computer.jnlpmac} ^${computer.name}"
+        resourceRequestCpu: "50m"
+        resourceLimitCpu: "500m"
+        resourceRequestMemory: "400Mi"
+        resourceLimitMemory: "1536Mi"
+    workspaceVolume:
+      emptyDirWorkspaceVolume:
+        memory: false
+    volumes:
+      - hostPathVolume:
+          hostPath: "/var/run/docker.sock"
+          mountPath: "/var/run/docker.sock"
+      - hostPathVolume:
+          hostPath: "/var/data/jenkins_sonar_cache"
+          mountPath: "/root/.sonar/cache"
+    yaml: "spec:\r\n  affinity:\r\n    nodeAffinity:\r\n      preferredDuringSchedulingIgnoredDuringExecution:\r\n      - weight: 1\r\n        preference:\r\n          matchExpressions:\r\n          - key: node-role.kubernetes.io/worker\r\n            operator: In\r\n            values:\r\n            - ci\r\n  tolerations:\r\n  - key: \"node.kubernetes.io/ci\"\r\n    operator: \"Exists\"\r\n    effect: \"NoSchedule\"\r\n  - key: \"node.kubernetes.io/ci\"\r\n    operator: \"Exists\"\r\n    effect: \"PreferNoSchedule\"\r\n  containers:\r\n  - name: \"base\"\r\n    resources:\r\n      requests:\r\n        ephemeral-storage: \"1Gi\"\r\n      limits:\r\n        ephemeral-storage: \"10Gi\"\r\n  securityContext:\r\n    fsGroup: 1000\r\n "

@@ -1,0 +1,26 @@
+name: base
+namespace: default
+label: base
+idleMinutes: 0
+containers:
+- args: ""
+  command: cat
+  image: kubesphere/builder-base:v3.2.0
+  name: base
+  privileged: false
+  ttyEnabled: true
+nodeUsageMode: EXCLUSIVE
+volumes:
+  - hostPathVolume:
+      hostPath: /var/run/docker.sock
+      mountPath: /var/run/docker.sock
+  - hostPathVolume:
+      hostPath: /var/data/jenkins_go_cache
+      mountPath: /home/jenkins/go/pkg
+  - hostPathVolume:
+      hostPath: /var/data/jenkins_sonar_cache
+      mountPath: /root/.sonar/cache
+yaml: ""
+workspaceVolume:
+  emptyDirWorkspaceVolume:
+    memory: false
