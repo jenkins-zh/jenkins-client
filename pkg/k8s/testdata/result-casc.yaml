@@ -62,7 +62,6 @@ jenkins:
           resourceRequestCpu: 100m
           resourceRequestMemory: 100Mi
           ttyEnabled: true
-          volumes: null
         idleMinutes: 0
         label: base
         name: base

@@ -19,6 +19,14 @@ func (c *JenkinsConfig) GetConfigAsString() string {
 	return string(c.Config)
 }
 
+// ReplaceOrAddPodTemplate replace the existing PodTemplate, or add it if it's not exist
+func (c *JenkinsConfig) ReplaceOrAddPodTemplate(podTemplate *v1.PodTemplate) (err error) {
+	if err = c.RemovePodTemplate(podTemplate.Name); err == nil {
+		err = c.AddPodTemplate(podTemplate)
+	}
+	return
+}
+
 // AddPodTemplate adds a PodTemplate to the Jenkins cloud config
 func (c *JenkinsConfig) AddPodTemplate(podTemplate *v1.PodTemplate) (err error) {
 	casc := map[string]interface{}{}
@@ -31,6 +39,7 @@ func (c *JenkinsConfig) AddPodTemplate(podTemplate *v1.PodTemplate) (err error) 
 	var ok bool
 	if templatesObj, ok, err = unstructured.NestedField(casc, "jenkins", "clouds[0]", "kubernetes", "templates"); !ok {
 		err = fmt.Errorf("failed to find jenkins.cloud[0]")
+		return
 	} else if err != nil {
 		return
 	}
@@ -45,12 +54,8 @@ func (c *JenkinsConfig) AddPodTemplate(podTemplate *v1.PodTemplate) (err error) 
 		templates = append(templates, targetPodTemplate)
 	}
 
-	if err = unstructured.SetNestedField(casc, templates, "jenkins", "clouds[0]", "kubernetes", "templates"); err != nil {
-		return
-	}
-
-	if c.Config, err = yaml.Marshal(casc); err != nil {
-		return
+	if err = unstructured.SetNestedField(casc, templates, "jenkins", "clouds[0]", "kubernetes", "templates"); err == nil {
+		c.Config, err = yaml.Marshal(casc)
 	}
 	return
 }
@@ -119,6 +124,7 @@ func (c *JenkinsConfig) RemovePodTemplate(name string) (err error) {
 	var ok bool
 	if templatesObj, ok, err = unstructured.NestedField(casc, "jenkins", "clouds[0]", "kubernetes", "templates"); !ok {
 		err = fmt.Errorf("failed to find jenkins.cloud[0]")
+		return
 	} else if err != nil {
 		return
 	}
@@ -140,12 +146,8 @@ func (c *JenkinsConfig) RemovePodTemplate(name string) (err error) {
 		}
 	}
 
-	if err = unstructured.SetNestedField(casc, templateArray, "jenkins", "clouds[0]", "kubernetes", "templates"); err != nil {
-		return
-	}
-
-	if c.Config, err = yaml.Marshal(casc); err != nil {
-		return
+	if err = unstructured.SetNestedField(casc, templateArray, "jenkins", "clouds[0]", "kubernetes", "templates"); err == nil {
+		c.Config, err = yaml.Marshal(casc)
 	}
 	return
 }
@@ -198,10 +200,10 @@ type Container struct {
 	Args                  string `json:"args"`
 	TtyEnabled            bool   `json:"ttyEnabled"`
 	Privileged            bool   `json:"privileged"`
-	ResourceRequestCPU    string `json:"resourceRequestCpu"`
-	ResourceLimitCPU      string `json:"resourceLimitCpu"`
-	ResourceRequestMemory string `json:"resourceRequestMemory"`
-	ResourceLimitMemory   string `json:"resourceLimitMemory"`
+	ResourceRequestCPU    string `json:"resourceRequestCpu,omitempty"`
+	ResourceLimitCPU      string `json:"resourceLimitCpu,omitempty"`
+	ResourceRequestMemory string `json:"resourceRequestMemory,omitempty"`
+	ResourceLimitMemory   string `json:"resourceLimitMemory,omitempty"`
 }
 
 // WorkspaceVolume is the volume of the Jenkins agent workspace
