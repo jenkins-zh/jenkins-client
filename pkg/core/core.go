@@ -62,7 +62,7 @@ type Result struct {
 // GenericResult represents a generic result interface
 type GenericResult interface {
 	GetResult() string
-	GetErrors() []string
+	GetErrors() []interface{}
 	GetStatus() string
 }
 
@@ -70,7 +70,7 @@ type GenericResult interface {
 type JSONResult struct {
 	Result string                 `json:"result"`
 	JSON   map[string]interface{} `json:"json"`
-	Errors []string               `json:"errors"`
+	Errors []interface{}          `json:"errors"`
 }
 
 // GetResult returns the result of this object
@@ -80,7 +80,7 @@ func (r JSONResult) GetResult() string {
 }
 
 // GetErrors returns the errors
-func (r JSONResult) GetErrors() []string {
+func (r JSONResult) GetErrors() []interface{} {
 	return r.Errors
 }
 
@@ -109,9 +109,9 @@ func (q *Client) ToJSON(jenkinsfile string) (result GenericResult, err error) {
 
 // JenkinsfileResult represents the Jenkinsfile result
 type JenkinsfileResult struct {
-	Result      string   `json:"result"`
-	Jenkinsfile string   `json:"jenkinsfile"`
-	Errors      []string `json:"errors"`
+	Result      string        `json:"result"`
+	Jenkinsfile string        `json:"jenkinsfile"`
+	Errors      []interface{} `json:"errors"`
 }
 
 // GetResult returns the result
@@ -120,7 +120,7 @@ func (r JenkinsfileResult) GetResult() string {
 }
 
 // GetErrors returns the errors
-func (r JenkinsfileResult) GetErrors() []string {
+func (r JenkinsfileResult) GetErrors() []interface{} {
 	return r.Errors
 }
 
