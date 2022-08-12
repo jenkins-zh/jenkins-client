@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	unstructured "github.com/linuxsuren/unstructured/pkg"
@@ -83,6 +84,9 @@ func ConvertToJenkinsPodTemplate(podTemplate *v1.PodTemplate) (target JenkinsPod
 	// set the template level fields
 	target.YAML = annotations["containers.yaml"]
 	target.InheritFrom = annotations["inherit.from"]
+	if idleMinutes, parseErr := strconv.Atoi(annotations["idleMinutes"]); parseErr == nil {
+		target.IdleMinutes = idleMinutes
+	}
 
 	// convert the containers
 	containers := podTemplate.Template.Spec.Containers

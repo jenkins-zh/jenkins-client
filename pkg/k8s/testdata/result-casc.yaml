@@ -62,7 +62,7 @@ jenkins:
           resourceRequestCpu: 100m
           resourceRequestMemory: 100Mi
           ttyEnabled: true
-        idleMinutes: 0
+        idleMinutes: 1
         inheritFrom: base
         label: go newbase base
         name: base
