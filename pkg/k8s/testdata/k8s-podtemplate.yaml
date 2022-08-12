@@ -7,6 +7,7 @@ metadata:
     jenkins.agent.labels: "go newbase"
     inherit.from: "base"
     containers.yaml: "fake"
+    idleMinutes: "1"
 template:
   metadata:
     name: base
