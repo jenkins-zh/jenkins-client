@@ -2,9 +2,7 @@ package casc
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/core"
 )
@@ -16,40 +14,28 @@ type Manager struct {
 
 // Export exports the config of configuration-as-code
 func (c *Manager) Export() (config string, err error) {
-	var (
-		data       []byte
-		statusCode int
-	)
-
-	if statusCode, data, err = c.Request(http.MethodPost, "/configuration-as-code/export",
-		nil, nil); err == nil &&
-		statusCode != http.StatusOK {
-		err = c.ErrorHandle(statusCode, data)
+	request := core.NewRequest("/configuration-as-code/export", &c.JenkinsCore)
+	request.WithPostMethod()
+	if err = request.Do(); err == nil {
+		config = string(request.GetData())
 	}
-	config = string(data)
 	return
 }
 
 // Schema get the schema of configuration-as-code
 func (c *Manager) Schema() (schema string, err error) {
-	var (
-		data       []byte
-		statusCode int
-	)
-
-	if statusCode, data, err = c.Request(http.MethodPost, "/configuration-as-code/schema",
-		nil, nil); err == nil &&
-		statusCode != http.StatusOK {
-		err = c.ErrorHandle(statusCode, data)
+	request := core.NewRequest("/configuration-as-code/schema", &c.JenkinsCore)
+	request.WithPostMethod()
+	if err = request.Do(); err == nil {
+		schema = string(request.GetData())
 	}
-	schema = string(data)
 	return
 }
 
 // Reload reloads the config of configuration-as-code
 func (c *Manager) Reload() (err error) {
-	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/reload",
-		nil, nil, http.StatusOK)
+	request := core.NewRequest("/configuration-as-code/reload", &c.JenkinsCore)
+	err = request.WithPostMethod().Do()
 	return
 }
 
@@ -60,9 +46,9 @@ func (c *Manager) Replace(source string) (err error) {
 	formValue.Set("_.newSource", source)
 
 	// Jenkins does not have a standard API. This is a form submit, so the expected code is not 200
-	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/replace",
-		core.AsFormRequest,
-		strings.NewReader(formValue.Encode()), http.StatusOK)
+	request := core.NewRequest("/configuration-as-code/replace", &c.JenkinsCore)
+	request.WithPostMethod().AsFormRequest().WithValues(formValue).AcceptStatusCode(302)
+	err = request.Do()
 	if urlErr, ok := err.(*url.Error); ok && urlErr.Err.Error() == "302 response missing Location header" {
 		err = nil
 	}
@@ -74,15 +60,16 @@ func (c *Manager) CheckNewSource(source string) (err error) {
 	formValue := make(url.Values)
 	formValue.Set("newSource", source)
 
-	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/checkNewSource",
-		core.AsFormRequest,
-		strings.NewReader(formValue.Encode()), http.StatusOK)
+	request := core.NewRequest("/configuration-as-code/checkNewSource", &c.JenkinsCore)
+	request.WithPostMethod().AsFormRequest().WithValues(formValue)
+	err = request.Do()
 	return
 }
 
 // Apply applies the config of configuration-as-code
 func (c *Manager) Apply() (err error) {
-	_, err = c.RequestWithoutData(http.MethodPost, "/configuration-as-code/apply",
-		nil, nil, http.StatusOK)
+	request := core.NewRequest("/configuration-as-code/apply", &c.JenkinsCore)
+	request.WithPostMethod()
+	err = request.Do()
 	return
 }

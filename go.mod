@@ -9,6 +9,7 @@ require (
 	github.com/linuxsuren/http-downloader v0.0.29
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.15.0
+	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.19.0
 	moul.io/http2curl v1.0.0
 )

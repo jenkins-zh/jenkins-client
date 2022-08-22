@@ -6,8 +6,10 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"testing"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -238,3 +240,53 @@ var _ = Describe("common test", func() {
 		})
 	})
 })
+
+func TestRemoveSliceItem(t *testing.T) {
+	tests := []struct {
+		name   string
+		items  []int
+		target int
+		expect []int
+	}{{
+		name:   "empty slice",
+		items:  []int{},
+		target: 12,
+		expect: []int{},
+	}, {
+		name:   "one item, not found the target",
+		items:  []int{12},
+		target: 13,
+		expect: []int{12},
+	}, {
+		name:   "one item, match with the target",
+		items:  []int{12},
+		target: 12,
+		expect: []int{},
+	}, {
+		name:   "two items, not found the target",
+		items:  []int{12, 13},
+		target: 14,
+		expect: []int{12, 13},
+	}, {
+		name:   "two items, match with the target",
+		items:  []int{12, 13},
+		target: 12,
+		expect: []int{13},
+	}, {
+		name:   "more items, not found the target",
+		items:  []int{12, 13, 14, 15},
+		target: 10,
+		expect: []int{12, 13, 14, 15},
+	}, {
+		name:   "more items, match with the target",
+		items:  []int{12, 13, 14, 15},
+		target: 14,
+		expect: []int{12, 13, 15},
+	}}
+	for i, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := removeSliceItem(tt.items, tt.target)
+			assert.ElementsMatch(t, tt.expect, result, "failed in case [%s]-[%d]", tt.name, i)
+		})
+	}
+}

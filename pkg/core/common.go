@@ -9,6 +9,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/util"
@@ -167,6 +169,123 @@ func (j *JenkinsCore) RequestWithoutData(method, api string, headers map[string]
 	if statusCode, data, err = j.Request(method, api, headers, payload); err == nil &&
 		statusCode != successCode {
 		err = j.ErrorHandle(statusCode, data)
+	}
+	return
+}
+
+// RequestBuilder is a helper for the HTTP request
+type RequestBuilder struct {
+	client      *JenkinsCore
+	acceptCodes []int
+	method      string
+	api         string
+	headers     map[string]string
+	payload     io.Reader
+
+	responseCode int
+	data         []byte
+}
+
+// NewRequest creates a HTTP request builder instance
+func NewRequest(api string, j *JenkinsCore) *RequestBuilder {
+	return &RequestBuilder{
+		api:         api,
+		method:      http.MethodGet,
+		headers:     map[string]string{},
+		acceptCodes: []int{http.StatusOK},
+		client:      j,
+	}
+}
+
+// AcceptStatusCode accept status code
+func (r *RequestBuilder) AcceptStatusCode(code int) *RequestBuilder {
+	r.acceptCodes = append(r.acceptCodes, code)
+	return r
+}
+
+// RejectStatusCode reject specific status code
+func (r *RequestBuilder) RejectStatusCode(code int) *RequestBuilder {
+	r.acceptCodes = removeSliceItem(r.acceptCodes, code)
+	return r
+}
+
+func removeSliceItem(items []int, target int) []int {
+	for i := range items {
+		if items[i] == target {
+			count := len(items)
+			if count >= 2 {
+				items[i] = items[len(items)-1]
+				items = items[:len(items)-1]
+			} else {
+				items = []int{}
+			}
+			break
+		}
+	}
+	return items
+}
+
+// WithMethod sets the HTTP request method
+func (r *RequestBuilder) WithMethod(method string) *RequestBuilder {
+	r.method = method
+	return r
+}
+
+// WithPostMethod sets the request method be POSt
+func (r *RequestBuilder) WithPostMethod() *RequestBuilder {
+	return r.WithMethod(http.MethodPost)
+}
+
+// WithPayload sets the payload for the request
+func (r *RequestBuilder) WithPayload(payload io.Reader) *RequestBuilder {
+	r.payload = payload
+	return r
+}
+
+// WithValues sets the payload with values format
+func (r *RequestBuilder) WithValues(values url.Values) *RequestBuilder {
+	return r.WithPayload(strings.NewReader(values.Encode()))
+}
+
+// AddHeader adds a header
+func (r *RequestBuilder) AddHeader(key, val string) *RequestBuilder {
+	r.headers[key] = val
+	return r
+}
+
+// AsFormRequest makes this request as a form request
+func (r *RequestBuilder) AsFormRequest() *RequestBuilder {
+	return r.AddHeader("Content-Type", "application/x-www-form-urlencoded")
+}
+
+// AsPostFormRequest make this request as a POST form request
+func (r *RequestBuilder) AsPostFormRequest() *RequestBuilder {
+	return r.AsFormRequest().WithMethod(http.MethodPost)
+}
+
+// GetData returns the response data
+func (r *RequestBuilder) GetData() []byte {
+	return r.data
+}
+
+// GetObject parses the data to an interface
+func (r *RequestBuilder) GetObject(obj interface{}) error {
+	return json.Unmarshal(r.GetData(), obj)
+}
+
+// Do runs the HTTP request
+func (r *RequestBuilder) Do() (err error) {
+	if r.responseCode, r.data, err = r.client.Request(r.method, r.api, r.headers, r.payload); err == nil {
+		found := false
+		for _, code := range r.acceptCodes {
+			if code == r.responseCode {
+				found = true
+				break
+			}
+		}
+		if !found {
+			err = r.client.ErrorHandle(r.responseCode, r.data)
+		}
 	}
 	return
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -37,6 +38,42 @@ func PrepareForDeleteCredential(roundTripper *mhttp.MockRoundTripper, rootURL, u
 	api := fmt.Sprintf("%s/credentials/store/%s/domain/_/credential/%s/doDelete", rootURL, store, id)
 	request, _ := http.NewRequest(http.MethodPost, api, nil)
 	core.PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
+}
+
+// PrepareForDeleteCredentialInFolder only for test
+func PrepareForDeleteCredentialInFolder(roundTripper *mhttp.MockRoundTripper, rootURL, user, password, folder, id string) {
+	api := fmt.Sprintf("%s/job/%s/credentials/store/folder/domain/_/credential/%s/doDelete", rootURL, folder, id)
+	request, _ := http.NewRequest(http.MethodPost, api, nil)
+	core.PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
+}
+
+// PrepareForCreateCredentialInFolder only for test
+func PrepareForCreateCredentialInFolder(roundTripper *mhttp.MockRoundTripper, rootURL, user, password, folder string, payload io.Reader) {
+	api := fmt.Sprintf("%s/job/%s/credentials/store/folder/domain/_/createCredentials", rootURL, folder)
+	request, _ := http.NewRequest(http.MethodPost, api, payload)
+	request.Header.Add(httpdownloader.ContentType, httpdownloader.ApplicationForm)
+	core.PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
+}
+
+// PrepareForUpdateCredentialInFolder only for test
+func PrepareForUpdateCredentialInFolder(roundTripper *mhttp.MockRoundTripper, rootURL, user, password, folder, id string, payload io.Reader) {
+	api := fmt.Sprintf("%s/job/%s/credentials/store/folder/domain/_/credential/%s/updateSubmit", rootURL, folder, id)
+	request, _ := http.NewRequest(http.MethodPost, api, payload)
+	request.Header.Add(httpdownloader.ContentType, httpdownloader.ApplicationForm)
+	core.PrepareCommonPost(request, "", roundTripper, user, password, rootURL)
+}
+
+// PrepareForGetCredentialInFolder only for test
+func PrepareForGetCredentialInFolder(roundTripper *mhttp.MockRoundTripper, rootURL, user, password, folder, id string, payload io.Reader) {
+	api := fmt.Sprintf("%s/job/%s/credentials/store/folder/domain/_/credential/%s", rootURL, folder, id)
+	request, _ := http.NewRequest(http.MethodGet, api, payload)
+	response := &http.Response{
+		StatusCode: 200,
+		Request:    request,
+		Body:       ioutil.NopCloser(bytes.NewBufferString(PrepareForCredentialListJSON())),
+	}
+	roundTripper.EXPECT().
+		RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
 }
 
 // PrepareForCreateCredential only for test

@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
 var _ = Describe("Test open browser", func() {
@@ -21,4 +22,13 @@ func TestShellProcessSuccess(t *testing.T) {
 		return
 	}
 	//os.Exit(0)
+}
+
+func TestFakeLookPath(t *testing.T) {
+	val, err := FakeLookPath("fake")
+	assert.Nil(t, err)
+	assert.Equal(t, "fake", val)
+
+	err = FakeSystemCallExecSuccess("", nil, nil)
+	assert.Nil(t, err)
 }
