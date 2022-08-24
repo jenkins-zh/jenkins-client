@@ -2,9 +2,7 @@ package core
 
 import (
 	"encoding/json"
-	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/jenkins-zh/jenkins-client/pkg/util"
 	"go.uber.org/zap"
@@ -33,23 +31,30 @@ type Client struct {
 
 // Restart will send the restart request
 func (q *Client) Restart() (err error) {
-	_, err = q.RequestWithoutData(http.MethodPost, "/safeRestart", nil, nil, 503)
+	request := NewRequest("/safeRestart", &q.JenkinsCore)
+	request.WithPostMethod().AcceptStatusCode(503)
+	err = request.Do()
 	return
 }
 
 // RestartDirectly restart Jenkins directly
 func (q *Client) RestartDirectly() (err error) {
-	_, err = q.RequestWithoutData(http.MethodPost, "/restart", nil, nil, 503)
+	request := NewRequest("/restart", &q.JenkinsCore)
+	request.WithPostMethod().AcceptStatusCode(503)
+	err = request.Do()
 	return
 }
 
 // Shutdown puts Jenkins into the quiet mode, wait for existing builds to be completed, and then shut down Jenkins
 func (q *Client) Shutdown(safe bool) (err error) {
+	var request *RequestBuilder
 	if safe {
-		_, err = q.RequestWithoutData(http.MethodPost, "/safeExit", nil, nil, 200)
+		request = NewRequest("/safeExit", &q.JenkinsCore)
 	} else {
-		_, err = q.RequestWithoutData(http.MethodPost, "/exit", nil, nil, 200)
+		request = NewRequest("/exit", &q.JenkinsCore)
 	}
+	request.WithPostMethod()
+	err = request.Do()
 	return
 }
 
@@ -92,17 +97,16 @@ func (r JSONResult) GetStatus() string {
 // ToJSON turns a Jenkinsfile to JSON format
 // Read details from https://github.com/jenkinsci/pipeline-model-definition-plugin/blob/master/EXTENDING.md
 func (q *Client) ToJSON(jenkinsfile string) (result GenericResult, err error) {
-	payloadData := url.Values{"jenkinsfile": {jenkinsfile}}
-	payload := strings.NewReader(payloadData.Encode())
-
 	genericResult := &Result{
 		Data: &JSONResult{},
 	}
-	err = q.RequestWithData(http.MethodPost, "/pipeline-model-converter/toJson", map[string]string{
-		"Content-Type": "application/x-www-form-urlencoded",
-	}, payload, http.StatusOK, genericResult)
-	if err == nil {
-		result = genericResult.Data
+
+	request := NewRequest("/pipeline-model-converter/toJson", &q.JenkinsCore)
+	request.WithPostMethod().AsFormRequest().WithValues(url.Values{"jenkinsfile": {jenkinsfile}})
+	if err = request.Do(); err == nil {
+		if err = request.GetObject(genericResult); err == nil {
+			result = genericResult.Data
+		}
 	}
 	return
 }
@@ -132,17 +136,16 @@ func (r JenkinsfileResult) GetStatus() string {
 // ToJenkinsfile converts a JSON format data to Jenkinsfile
 // Read details from https://github.com/jenkinsci/pipeline-model-definition-plugin/blob/master/EXTENDING.md
 func (q *Client) ToJenkinsfile(data string) (result GenericResult, err error) {
-	payloadData := url.Values{"json": {data}}
-	payload := strings.NewReader(payloadData.Encode())
-
 	genericResult := &Result{
 		Data: &JenkinsfileResult{},
 	}
-	err = q.RequestWithData(http.MethodPost, "/pipeline-model-converter/toJenkinsfile", map[string]string{
-		"Content-Type": "application/x-www-form-urlencoded",
-	}, payload, http.StatusOK, genericResult)
-	if err == nil {
-		result = genericResult.Data
+
+	request := NewRequest("/pipeline-model-converter/toJenkinsfile", &q.JenkinsCore)
+	request.WithPostMethod().AsFormRequest().WithValues(url.Values{"json": {data}})
+	if err = request.Do(); err == nil {
+		if err = request.GetObject(genericResult); err == nil {
+			result = genericResult.Data
+		}
 	}
 	return
 }
@@ -181,17 +184,24 @@ type AgentLabel struct {
 // Read details from https://github.com/jenkinsci/label-linked-jobs-plugin
 func (q *Client) GetLabels() (labelsRes *LabelsResponse, err error) {
 	labelsRes = &LabelsResponse{}
-	err = q.RequestWithData(http.MethodGet, "/labelsdashboard/labelsData", nil, nil, http.StatusOK, labelsRes)
+	request := NewRequest("/labelsdashboard/labelsData", &q.JenkinsCore)
+	if err = request.Do(); err == nil {
+		err = request.GetObject(labelsRes)
+	}
 	return
 }
 
 // PrepareShutdown Put Jenkins in a Quiet mode, in preparation for a restart. In that mode Jenkins don’t start any build
 func (q *Client) PrepareShutdown(cancel bool) (err error) {
+	var api string
 	if cancel {
-		_, err = q.RequestWithoutData(http.MethodPost, "/cancelQuietDown", nil, nil, 200)
+		api = "/cancelQuietDown"
 	} else {
-		_, err = q.RequestWithoutData(http.MethodPost, "/quietDown", nil, nil, 200)
+		api = "/quietDown"
 	}
+	request := NewRequest(api, &q.JenkinsCore)
+	request.WithPostMethod()
+	err = request.Do()
 	return
 }
 
@@ -204,6 +214,9 @@ type JenkinsIdentity struct {
 
 // GetIdentity returns the identity of a Jenkins
 func (q *Client) GetIdentity() (identity JenkinsIdentity, err error) {
-	err = q.RequestWithData(http.MethodGet, "/instance", nil, nil, 200, &identity)
+	request := NewRequest("/instance", &q.JenkinsCore)
+	if err = request.Do(); err == nil {
+		err = request.GetObject(&identity)
+	}
 	return
 }
