@@ -2,8 +2,9 @@ package k8s
 
 import (
 	"fmt"
-	"io/ioutil"
 	"testing"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/util"
 
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
@@ -25,7 +26,7 @@ func TestJenkinsConfig_AddPodTemplate(t *testing.T) {
 		wantErr      bool
 	}{{
 		name:         "normal",
-		fields:       fields{Config: readFile("testdata/casc.yaml")},
+		fields:       fields{Config: util.ReadFile("testdata/casc.yaml")},
 		args:         args{podTemplate: readPodTemplate("testdata/k8s-podtemplate.yaml")},
 		expectResult: "testdata/result-casc.yaml",
 		wantErr:      false,
@@ -50,7 +51,7 @@ func TestJenkinsConfig_AddPodTemplate(t *testing.T) {
 			}
 
 			if tt.expectResult != "" {
-				assert.Equal(t, readFileASString(tt.expectResult), c.GetConfigAsString())
+				assert.Equal(t, util.ReadFileASString(tt.expectResult), c.GetConfigAsString())
 			}
 		})
 	}
@@ -71,7 +72,7 @@ func TestJenkinsConfig_RemovePodTemplate(t *testing.T) {
 		expectResult string
 	}{{
 		name:         "normal",
-		fields:       fields{Config: readFile("testdata/result-casc.yaml")},
+		fields:       fields{Config: util.ReadFile("testdata/result-casc.yaml")},
 		args:         args{podTemplate: "base"},
 		expectResult: "testdata/casc.yaml",
 		wantErr:      false,
@@ -95,7 +96,7 @@ func TestJenkinsConfig_RemovePodTemplate(t *testing.T) {
 				t.Errorf("RemovePodTemplate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if tt.expectResult != "" {
-				assert.Equal(t, readFileASString(tt.expectResult), c.GetConfigAsString())
+				assert.Equal(t, util.ReadFileASString(tt.expectResult), c.GetConfigAsString())
 			}
 		})
 	}
@@ -104,24 +105,15 @@ func TestJenkinsConfig_RemovePodTemplate(t *testing.T) {
 func readPodTemplate(file string) (result *v1.PodTemplate) {
 	result = &v1.PodTemplate{}
 
-	data := readFile(file)
+	data := util.ReadFile(file)
 	_ = yaml.Unmarshal(data, result)
 	return
 }
 
 func readJenkinsPodTemplate(file string) (result JenkinsPodTemplate) {
-	data := readFile(file)
+	data := util.ReadFile(file)
 	_ = yaml.Unmarshal(data, &result)
 	return
-}
-
-func readFile(file string) (data []byte) {
-	data, _ = ioutil.ReadFile(file)
-	return
-}
-
-func readFileASString(file string) string {
-	return string(readFile(file))
 }
 
 func TestJenkinsConfig_ReplaceOrAddPodTemplate(t *testing.T) {
@@ -139,7 +131,7 @@ func TestJenkinsConfig_ReplaceOrAddPodTemplate(t *testing.T) {
 		wantErr      assert.ErrorAssertionFunc
 	}{{
 		name:         "normal",
-		fields:       fields{Config: readFile("testdata/result-casc.yaml")},
+		fields:       fields{Config: util.ReadFile("testdata/result-casc.yaml")},
 		args:         args{podTemplate: readPodTemplate("testdata/k8s-podtemplate.yaml")},
 		expectResult: "testdata/result-casc.yaml",
 		wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -153,7 +145,7 @@ func TestJenkinsConfig_ReplaceOrAddPodTemplate(t *testing.T) {
 				Config: tt.fields.Config,
 			}
 			tt.wantErr(t, c.ReplaceOrAddPodTemplate(tt.args.podTemplate), fmt.Sprintf("ReplaceOrAddPodTemplate(%v)", tt.args.podTemplate))
-			assert.Equal(t, readFileASString(tt.expectResult), c.GetConfigAsString())
+			assert.Equal(t, util.ReadFileASString(tt.expectResult), c.GetConfigAsString())
 		})
 	}
 }
