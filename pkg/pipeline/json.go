@@ -2,12 +2,39 @@ package pipeline
 
 import (
 	"encoding/json"
+	"strings"
 )
 
 // GitRepo represents a git repository
 type GitRepo struct {
 	URL    string
 	Branch string
+}
+
+// GitRepos is the alias of GitRepo slice
+type GitRepos []GitRepo
+
+// GetURLs returns the git repository URLs as string
+func (g GitRepos) GetURLs() string {
+	var urls []string
+	for _, g := range g {
+		urls = append(urls, g.URL)
+	}
+	return strings.Join(urls, ",")
+}
+
+// GetBranchesAsJSONString returns the branches as JSON string
+//
+// For example:  ["master","fea-.*"]
+func (g GitRepos) GetBranchesAsJSONString() (result string) {
+	var branches []string
+	for _, g := range g {
+		branches = append(branches, g.Branch)
+	}
+	if data, err := json.Marshal(branches); err == nil {
+		result = string(data)
+	}
+	return
 }
 
 // FindGit finds the git repositories from a JSON format Jenkinsfile

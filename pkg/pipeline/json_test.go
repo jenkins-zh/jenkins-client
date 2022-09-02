@@ -35,3 +35,49 @@ func TestFindGit(t *testing.T) {
 		})
 	}
 }
+
+func TestGitRepos_GetURLs(t *testing.T) {
+	tests := []struct {
+		name string
+		g    GitRepos
+		want string
+	}{{
+		name: "normal",
+		g: []GitRepo{{
+			URL: "http://git.com",
+		}, {
+			URL: "http://fake.com",
+		}},
+		want: "http://git.com,http://fake.com",
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.g.GetURLs(); got != tt.want {
+				t.Errorf("GetURLs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGitRepos_GetBranchesAsJSONString(t *testing.T) {
+	tests := []struct {
+		name string
+		g    GitRepos
+		want string
+	}{{
+		name: "normal",
+		g: []GitRepo{{
+			Branch: "master",
+		}, {
+			Branch: "feat-x",
+		}},
+		want: `["master","feat-x"]`,
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.g.GetBranchesAsJSONString(); got != tt.want {
+				t.Errorf("GetBranchesAsJSONString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
