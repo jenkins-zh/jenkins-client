@@ -165,7 +165,7 @@ func TestUpdateInFolder(t *testing.T) {
 			roundTripper := mhttp.NewMockRoundTripper(ctrl)
 
 			formData := url.Values{}
-			formData.Add("json", fmt.Sprintf(`{"credentials": %s}`, util.TOJSON(obj)))
+			formData.Add("json", util.TOJSON(obj))
 			payload := strings.NewReader(formData.Encode())
 
 			manager.URL = "http://localhost"
