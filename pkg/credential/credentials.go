@@ -75,7 +75,7 @@ func (c *CredentialsManager) UpdateInFolder(folder, id string, cre interface{}) 
 	api := fmt.Sprintf("/job/%s/credentials/store/folder/domain/_/credential/%s/updateSubmit", folder, id)
 
 	formData := url.Values{}
-	formData.Add("json", fmt.Sprintf(`{"credentials": %s}`, util.TOJSON(cre)))
+	formData.Add("json", util.TOJSON(cre))
 
 	request := core.NewRequest(api, &c.JenkinsCore)
 	request.AsPostFormRequest().WithValues(formData).AcceptStatusCode(http.StatusNotFound)

@@ -19,7 +19,7 @@ func URLJoin(host, api string) (targetURL *url.URL, err error) {
 	return
 }
 
-//URLJoinAsString  is an util function to join host URL and API URL
+// URLJoinAsString  is an util function to join host URL and API URL
 func URLJoinAsString(host, api string) (targetURLStr string, err error) {
 	var targetURL *url.URL
 	if targetURL, err = URLJoin(host, api); err == nil {
