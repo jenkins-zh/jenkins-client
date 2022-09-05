@@ -105,6 +105,10 @@ func ConvertToJenkinsPodTemplate(podTemplate *v1.PodTemplate) (target JenkinsPod
 				TtyEnabled: true,
 			}
 
+			if container.SecurityContext != nil && container.SecurityContext.Privileged != nil {
+				jenkinsAgentContainer.Privileged = *container.SecurityContext.Privileged
+			}
+
 			if mem := container.Resources.Requests.Memory(); mem != nil && !mem.IsZero() {
 				jenkinsAgentContainer.ResourceRequestMemory = mem.String()
 			}

@@ -41,3 +41,5 @@ template:
             mountPath: /home/jenkins/go/pkg
           - name: sonarcache
             mountPath: /root/.sonar/cache
+        securityContext:
+          privileged: false
