@@ -1,0 +1,56 @@
+{
+  "pipeline": {
+    "stages": [
+      {
+        "branches": [
+          {
+            "name": "",
+            "steps": [
+              {
+                "arguments": [
+                  {
+                    "key": "url",
+                    "value": {
+                      "isLiteral": true,
+                      "value": "https://github.com/kubesphere/ks-devops/"
+                    }
+                  },
+                  {
+                    "key": "credentialsId",
+                    "value": {
+                      "isLiteral": true,
+                      "value": ""
+                    }
+                  },
+                  {
+                    "key": "branch",
+                    "value": {
+                      "isLiteral": true,
+                      "value": "master"
+                    }
+                  },
+                  {
+                    "key": "changelog",
+                    "value": {
+                      "isLiteral": true,
+                      "value": true
+                    }
+                  },
+                  {
+                    "key": "poll",
+                    "value": {
+                      "isLiteral": true,
+                      "value": false
+                    }
+                  }
+                ],
+                "name": "git"
+              }
+            ]
+          }
+        ],
+        "name": "stage-kwdg5"
+      }
+    ]
+  }
+}
