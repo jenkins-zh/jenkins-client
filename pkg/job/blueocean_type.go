@@ -128,7 +128,7 @@ type Issue struct {
 type Node struct {
 	DisplayDescription string `json:"displayDescription,omitempty"`
 	DisplayName        string `json:"displayName,omitempty"`
-	DurationInMillis   int    `json:"durationInMillis,omitempty"`
+	DurationInMillis   int64  `json:"durationInMillis,omitempty"`
 	ID                 string `json:"id,omitempty"`
 	Input              *Input `json:"input,omitempty"`
 	Result             string `json:"result,omitempty"`
