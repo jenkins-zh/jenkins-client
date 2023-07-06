@@ -4,9 +4,11 @@ import (
 	"io/ioutil"
 
 	"github.com/golang/mock/gomock"
-	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 )
 
 var _ = Describe("artifacts test", func() {
@@ -91,6 +93,111 @@ var _ = Describe("artifacts test", func() {
 			PrepareGetNoExistsArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
 			_, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
+			Expect(err).Should(HaveOccurred())
+		})
+	})
+
+	Context("generateArtifactURL", func() {
+		var (
+			projectName   string
+			pipelineName  string
+			isMultiBranch bool
+			branchName    string
+			buildID       int
+			filename      string
+		)
+		It("should success with pipeline", func() {
+			projectName = "project"
+			pipelineName = "pipeline"
+			isMultiBranch = false
+			branchName = "main"
+			buildID = 1
+			filename = "a.jar"
+			want := "/job/project/job/pipeline/1/artifact/a.jar"
+			url := generateArtifactURL(projectName, pipelineName, isMultiBranch, branchName, buildID, filename)
+			Expect(url).To(Equal(want))
+		})
+
+		It("should success with multi-branch-pipeline", func() {
+			projectName = "project"
+			pipelineName = "pipeline"
+			isMultiBranch = true
+			branchName = "main"
+			buildID = 1
+			filename = "a.jar"
+			want := "/job/project/job/pipeline/job/main/1/artifact/a.jar"
+			url := generateArtifactURL(projectName, pipelineName, isMultiBranch, branchName, buildID, filename)
+			Expect(url).To(Equal(want))
+		})
+	})
+
+	Context("GetArtifactFromMultiBranchPipeline", func() {
+		It("should success with NoScmPipelineType", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			branchName := "main"
+			PrepareGetArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
+
+			body, err := artifactClient.GetArtifactFromMultiBranchPipeline(projectName, pipelineName, false, branchName, 1, filename)
+			Expect(err).To(BeNil())
+			Expect(func() bool {
+				b, err := ioutil.ReadAll(body)
+				if err != nil {
+					return false
+				}
+				return len(b) > 0
+			}()).To(Equal(true))
+		})
+
+		It("should success with MultiBranchPipelineType", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			branchName := "main"
+			PrepareGetMultiBranchPipelineArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename, branchName)
+
+			body, err := artifactClient.GetArtifactFromMultiBranchPipeline(projectName, pipelineName, true, branchName, 1, filename)
+			Expect(err).To(BeNil())
+			Expect(func() bool {
+				b, err := ioutil.ReadAll(body)
+				if err != nil {
+					return false
+				}
+				return len(b) > 0
+			}()).To(Equal(true))
+		})
+
+		It("should fail with NoScmPipelineType", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			PrepareGetNoExistsArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
+
+			_, err := artifactClient.GetArtifactFromMultiBranchPipeline(projectName, pipelineName, false, "", 1, filename)
+			Expect(err).Should(HaveOccurred())
+		})
+
+		It("should fail with MultiBranchPipelineType", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			branchName := "main"
+			PrepareGetNoExistsMultiBranchPipelineArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename, branchName)
+
+			_, err := artifactClient.GetArtifactFromMultiBranchPipeline(projectName, pipelineName, true, branchName, 1, filename)
 			Expect(err).Should(HaveOccurred())
 		})
 	})
