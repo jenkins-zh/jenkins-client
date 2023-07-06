@@ -37,7 +37,12 @@ func (q *Client) List(jobName string, buildID int) (artifacts []Artifact, err er
 }
 
 // GetArtifact download artifact using stream
-func (q *Client) GetArtifact(projectName, pipelineName string, isMultiBranch bool, branchName string, buildID int, filename string) (io.ReadCloser, error) {
+func (q *Client) GetArtifact(projectName, pipelineName string, buildID int, filename string) (io.ReadCloser, error) {
+	return q.GetArtifactFromMultiBranchPipeline(pipelineName, pipelineName, false, "", buildID, filename)
+}
+
+// GetArtifactFromMultiBranchPipeline download multi pipeline artifact using stream
+func (q *Client) GetArtifactFromMultiBranchPipeline(projectName, pipelineName string, isMultiBranch bool, branchName string, buildID int, filename string) (io.ReadCloser, error) {
 	artifactURL := generateArtifactURL(projectName, pipelineName, isMultiBranch, branchName, buildID, filename)
 	resp, err := q.RequestWithResponse(http.MethodGet, artifactURL, nil, nil)
 	if err != nil {

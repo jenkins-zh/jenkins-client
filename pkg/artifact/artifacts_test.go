@@ -70,11 +70,9 @@ var _ = Describe("artifacts test", func() {
 			projectName := "fakename"
 			pipelineName := "fakename"
 			filename := "fakename"
-			isMultiBranch := false
-			branchName := "fakename"
 			PrepareGetArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
-			body, err := artifactClient.GetArtifact(projectName, pipelineName, isMultiBranch, branchName, 1, filename)
+			body, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
 			Expect(err).To(BeNil())
 			Expect(func() bool {
 				b, err := ioutil.ReadAll(body)
@@ -92,11 +90,9 @@ var _ = Describe("artifacts test", func() {
 			projectName := "fakename"
 			pipelineName := "fakename"
 			filename := "fakename"
-			isMultiBranch := false
-			branchName := "fakename"
 			PrepareGetNoExistsArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
-			_, err := artifactClient.GetArtifact(projectName, pipelineName, isMultiBranch, branchName, 1, filename)
+			_, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
 			Expect(err).Should(HaveOccurred())
 		})
 	})
@@ -132,6 +128,77 @@ var _ = Describe("artifacts test", func() {
 			want := "/job/project/job/pipeline/job/main/1/artifact/a.jar"
 			url := generateArtifactURL(projectName, pipelineName, isMultiBranch, branchName, buildID, filename)
 			Expect(url).To(Equal(want))
+		})
+	})
+
+	Context("GetArtifactFromMultiBranchPipeline", func() {
+		It("should success with NoScmPipelineType", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			branchName := "main"
+			PrepareGetArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
+
+			body, err := artifactClient.GetArtifactFromMultiBranchPipeline(projectName, pipelineName, false, branchName, 1, filename)
+			Expect(err).To(BeNil())
+			Expect(func() bool {
+				b, err := ioutil.ReadAll(body)
+				if err != nil {
+					return false
+				}
+				return len(b) > 0
+			}()).To(Equal(true))
+		})
+
+		It("should success with MultiBranchPipelineType", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			branchName := "main"
+			PrepareGetMultiBranchPipelineArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename, branchName)
+
+			body, err := artifactClient.GetArtifactFromMultiBranchPipeline(projectName, pipelineName, true, branchName, 1, filename)
+			Expect(err).To(BeNil())
+			Expect(func() bool {
+				b, err := ioutil.ReadAll(body)
+				if err != nil {
+					return false
+				}
+				return len(b) > 0
+			}()).To(Equal(true))
+		})
+
+		It("should fail with NoScmPipelineType", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			PrepareGetNoExistsArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
+
+			_, err := artifactClient.GetArtifactFromMultiBranchPipeline(projectName, pipelineName, false, "", 1, filename)
+			Expect(err).Should(HaveOccurred())
+		})
+
+		It("should fail with MultiBranchPipelineType", func() {
+			artifactClient.UserName = username
+			artifactClient.Token = password
+
+			projectName := "fakename"
+			pipelineName := "fakename"
+			filename := "fakename"
+			branchName := "main"
+			PrepareGetNoExistsMultiBranchPipelineArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename, branchName)
+
+			_, err := artifactClient.GetArtifactFromMultiBranchPipeline(projectName, pipelineName, true, branchName, 1, filename)
+			Expect(err).Should(HaveOccurred())
 		})
 	})
 })

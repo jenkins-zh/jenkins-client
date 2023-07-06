@@ -63,9 +63,45 @@ func PrepareGetArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, pas
 	return
 }
 
+// PrepareGetMultiBranchPipelineArtifact only for test
+func PrepareGetMultiBranchPipelineArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, passwd, projectName, pipelineName string, buildID int, filename, branchName string) (response *http.Response) {
+	var api = fmt.Sprintf("/job/%s/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, branchName, buildID, filename)
+	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", rootURL, api), nil)
+	response = &http.Response{
+		StatusCode: 200,
+		Request:    request,
+		Body:       ioutil.NopCloser(bytes.NewBufferString(`this is test file`)),
+	}
+	roundTripper.EXPECT().
+		RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
+
+	if user != "" && passwd != "" {
+		request.SetBasicAuth(user, passwd)
+	}
+	return
+}
+
 // PrepareGetNoExistsArtifact only for test
 func PrepareGetNoExistsArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, passwd, projectName, pipelineName string, buildID int, filename string) (response *http.Response) {
 	var api = fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildID, filename)
+	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", rootURL, api), nil)
+	response = &http.Response{
+		StatusCode: 404,
+		Request:    request,
+		Body:       nil,
+	}
+	roundTripper.EXPECT().
+		RoundTrip(core.NewRequestMatcher(request)).Return(response, nil)
+
+	if user != "" && passwd != "" {
+		request.SetBasicAuth(user, passwd)
+	}
+	return
+}
+
+// PrepareGetNoExistsMultiBranchPipelineArtifact only for test
+func PrepareGetNoExistsMultiBranchPipelineArtifact(roundTripper *mhttp.MockRoundTripper, rootURL, user, passwd, projectName, pipelineName string, buildID int, filename, branchName string) (response *http.Response) {
+	var api = fmt.Sprintf("/job/%s/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, branchName, buildID, filename)
 	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", rootURL, api), nil)
 	response = &http.Response{
 		StatusCode: 404,
