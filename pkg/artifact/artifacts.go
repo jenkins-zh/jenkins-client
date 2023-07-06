@@ -37,8 +37,8 @@ func (q *Client) List(jobName string, buildID int) (artifacts []Artifact, err er
 }
 
 // GetArtifact download artifact using stream
-func (q *Client) GetArtifact(projectName, pipelineName string, buildID int, filename string) (io.ReadCloser, error) {
-	artifactURL := fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildID, filename)
+func (q *Client) GetArtifact(projectName, pipelineName string, isMultiBranch bool, branchName string, buildID int, filename string) (io.ReadCloser, error) {
+	artifactURL := generateArtifactURL(projectName, pipelineName, isMultiBranch, branchName, buildID, filename)
 	resp, err := q.RequestWithResponse(http.MethodGet, artifactURL, nil, nil)
 	if err != nil {
 		return nil, err
@@ -49,4 +49,12 @@ func (q *Client) GetArtifact(projectName, pipelineName string, buildID int, file
 	}
 
 	return resp.Body, nil
+}
+
+// generateArtifactURL generate artifactURL by pipelineType
+func generateArtifactURL(projectName, pipelineName string, isMultiBranch bool, branchName string, buildID int, filename string) string {
+	if isMultiBranch {
+		return fmt.Sprintf("/job/%s/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, branchName, buildID, filename)
+	}
+	return fmt.Sprintf("/job/%s/job/%s/%d/artifact/%s", projectName, pipelineName, buildID, filename)
 }

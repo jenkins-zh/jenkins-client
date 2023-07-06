@@ -4,9 +4,11 @@ import (
 	"io/ioutil"
 
 	"github.com/golang/mock/gomock"
-	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 )
 
 var _ = Describe("artifacts test", func() {
@@ -68,9 +70,11 @@ var _ = Describe("artifacts test", func() {
 			projectName := "fakename"
 			pipelineName := "fakename"
 			filename := "fakename"
+			isMultiBranch := false
+			branchName := "fakename"
 			PrepareGetArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
-			body, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
+			body, err := artifactClient.GetArtifact(projectName, pipelineName, isMultiBranch, branchName, 1, filename)
 			Expect(err).To(BeNil())
 			Expect(func() bool {
 				b, err := ioutil.ReadAll(body)
@@ -88,10 +92,46 @@ var _ = Describe("artifacts test", func() {
 			projectName := "fakename"
 			pipelineName := "fakename"
 			filename := "fakename"
+			isMultiBranch := false
+			branchName := "fakename"
 			PrepareGetNoExistsArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
-			_, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
+			_, err := artifactClient.GetArtifact(projectName, pipelineName, isMultiBranch, branchName, 1, filename)
 			Expect(err).Should(HaveOccurred())
+		})
+	})
+
+	Context("generateArtifactURL", func() {
+		var (
+			projectName   string
+			pipelineName  string
+			isMultiBranch bool
+			branchName    string
+			buildID       int
+			filename      string
+		)
+		It("should success with pipeline", func() {
+			projectName = "project"
+			pipelineName = "pipeline"
+			isMultiBranch = false
+			branchName = "main"
+			buildID = 1
+			filename = "a.jar"
+			want := "/job/project/job/pipeline/1/artifact/a.jar"
+			url := generateArtifactURL(projectName, pipelineName, isMultiBranch, branchName, buildID, filename)
+			Expect(url).To(Equal(want))
+		})
+
+		It("should success with multi-branch-pipeline", func() {
+			projectName = "project"
+			pipelineName = "pipeline"
+			isMultiBranch = true
+			branchName = "main"
+			buildID = 1
+			filename = "a.jar"
+			want := "/job/project/job/pipeline/job/main/1/artifact/a.jar"
+			url := generateArtifactURL(projectName, pipelineName, isMultiBranch, branchName, buildID, filename)
+			Expect(url).To(Equal(want))
 		})
 	})
 })
