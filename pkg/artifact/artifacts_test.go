@@ -67,9 +67,9 @@ var _ = Describe("artifacts test", func() {
 			artifactClient.UserName = username
 			artifactClient.Token = password
 
-			projectName := "fakename"
-			pipelineName := "fakename"
-			filename := "fakename"
+			projectName := "project"
+			pipelineName := "pipeline"
+			filename := "a.jar"
 			PrepareGetArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
 			body, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
@@ -87,9 +87,9 @@ var _ = Describe("artifacts test", func() {
 			artifactClient.UserName = username
 			artifactClient.Token = password
 
-			projectName := "fakename"
-			pipelineName := "fakename"
-			filename := "fakename"
+			projectName := "project"
+			pipelineName := "pipeline"
+			filename := "a.jar"
 			PrepareGetNoExistsArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
 			_, err := artifactClient.GetArtifact(projectName, pipelineName, 1, filename)
@@ -136,9 +136,9 @@ var _ = Describe("artifacts test", func() {
 			artifactClient.UserName = username
 			artifactClient.Token = password
 
-			projectName := "fakename"
-			pipelineName := "fakename"
-			filename := "fakename"
+			projectName := "project"
+			pipelineName := "pipeline"
+			filename := "a.jar"
 			branchName := "main"
 			PrepareGetArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
@@ -157,9 +157,9 @@ var _ = Describe("artifacts test", func() {
 			artifactClient.UserName = username
 			artifactClient.Token = password
 
-			projectName := "fakename"
-			pipelineName := "fakename"
-			filename := "fakename"
+			projectName := "project"
+			pipelineName := "pipeline"
+			filename := "a.jar"
 			branchName := "main"
 			PrepareGetMultiBranchPipelineArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename, branchName)
 
@@ -178,9 +178,9 @@ var _ = Describe("artifacts test", func() {
 			artifactClient.UserName = username
 			artifactClient.Token = password
 
-			projectName := "fakename"
-			pipelineName := "fakename"
-			filename := "fakename"
+			projectName := "project"
+			pipelineName := "pipeline"
+			filename := "a.jar"
 			PrepareGetNoExistsArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename)
 
 			_, err := artifactClient.GetArtifactFromMultiBranchPipeline(projectName, pipelineName, false, "", 1, filename)
@@ -191,9 +191,9 @@ var _ = Describe("artifacts test", func() {
 			artifactClient.UserName = username
 			artifactClient.Token = password
 
-			projectName := "fakename"
-			pipelineName := "fakename"
-			filename := "fakename"
+			projectName := "project"
+			pipelineName := "pipeline"
+			filename := "a.jar"
 			branchName := "main"
 			PrepareGetNoExistsMultiBranchPipelineArtifact(roundTripper, artifactClient.URL, username, password, projectName, pipelineName, 1, filename, branchName)
 
