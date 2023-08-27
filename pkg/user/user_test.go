@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+
 	"github.com/golang/mock/gomock"
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	. "github.com/onsi/ginkgo"
