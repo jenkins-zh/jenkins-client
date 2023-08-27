@@ -85,6 +85,33 @@ var _ = Describe("user test", func() {
 		})
 	})
 
+	Context("CreateWithParams", func() {
+		It("should success", func() {
+			targetUserName := "fakeName"
+			targetEmail := "target@gmail.com"
+			userClient.UserName = username
+			userClient.Token = password
+
+			PrepareCreateUser(roundTripper, userClient.URL, username, password, targetUserName)
+
+			data := ForCreate{
+				Username:  targetUserName,
+				Password1: "testPass",
+				Password2: "testPass",
+				Email:     targetEmail,
+				User:      User{FullName: targetUserName},
+			}
+
+			result, err := userClient.CreateWithParams(data)
+			Expect(err).To(BeNil())
+			Expect(result).NotTo(BeNil())
+			Expect(result.Username).To(Equal(targetUserName))
+			Expect(result.Password1).To(Equal(result.Password2))
+			Expect(result.Password1).NotTo(Equal(""))
+			Expect(result.Email).To(Equal(targetEmail))
+		})
+	})
+
 	Context("CreateToken", func() {
 		It("should success, given token name", func() {
 			newTokenName := "fakeName"

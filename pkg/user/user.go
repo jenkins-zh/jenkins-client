@@ -108,7 +108,10 @@ func (q *Client) CreateWithParams(data ForCreate) (user *ForCreate, err error) {
 		code    int
 	)
 
-	userData, _ := json.Marshal(data)
+	userData, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
 	formData := url.Values{
 		"json":      {string(userData)},
 		"username":  {data.Username},
