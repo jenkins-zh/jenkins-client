@@ -2,7 +2,6 @@ package user
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -108,25 +107,6 @@ func (q *Client) CreateWithParams(data ForCreate) (user *ForCreate, err error) {
 		payload io.Reader
 		code    int
 	)
-
-	if data.Username == "" {
-		err = errors.Join(errors.New("error: username cannot be empty"))
-	}
-	if data.Password1 == "" {
-		err = errors.Join(errors.New("error: password1 cannot be empty"))
-	}
-	if data.Password2 == "" {
-		err = errors.Join(errors.New("error: password2 cannot be empty"))
-	}
-	if data.Email == "" {
-		err = errors.Join(errors.New("error: email cannot be empty"))
-	}
-	if data.FullName == "" {
-		err = errors.Join(errors.New("error: fullname cannot be empty"))
-	}
-	if err != nil {
-		return nil, err
-	}
 
 	userData, _ := json.Marshal(data)
 	formData := url.Values{
