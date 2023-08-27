@@ -42,6 +42,23 @@ func PrepareCreateUser(roundTripper *mhttp.MockRoundTripper, rootURL,
 	return
 }
 
+// PrepareCreateUserWithParams only for test
+func PrepareCreateUserWithParams(roundTripper *mhttp.MockRoundTripper, rootURL,
+	user, passwd, targetUserName string) (response *http.Response) {
+	data := ForCreate{
+		Username:  targetUserName,
+		Password1: "fakePass",
+		Password2: "fakePass",
+		Email:     fmt.Sprintf("%s@gmail.com", targetUserName),
+		User:      User{FullName: targetUserName},
+	}
+	payload, _ := genUserAsPayload(data)
+	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/securityRealm/createAccountByAdmin", rootURL), payload)
+	request.Header.Add(httpdownloader.ContentType, httpdownloader.ApplicationForm)
+	response = core.PrepareCommonPost(request, "", roundTripper, user, passwd, rootURL)
+	return
+}
+
 // PrepareCreateToken only for test
 func PrepareCreateToken(roundTripper *mhttp.MockRoundTripper, rootURL,
 	user, passwd, newTokenName, targetUser string) (response *http.Response) {
