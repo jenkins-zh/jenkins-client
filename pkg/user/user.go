@@ -101,6 +101,44 @@ func (q *Client) Create(username, password string) (user *ForCreate, err error) 
 	return
 }
 
+func genUserAsPayload(data ForCreate) (io.Reader, error) {
+	userData, err := json.Marshal(&data)
+	if err != nil {
+		return nil, err
+	}
+
+	formData := url.Values{
+		"json":      {string(userData)},
+		"username":  {data.Username},
+		"password1": {data.Password1},
+		"password2": {data.Password2},
+		"fullname":  {data.FullName},
+		"email":     {data.Email},
+	}
+	payload := strings.NewReader(formData.Encode())
+	return payload, nil
+}
+
+// CreateWithParams will create a user in Jenkins
+func (q *Client) CreateWithParams(data ForCreate) (user *ForCreate, err error) {
+	var (
+		payload io.Reader
+		code    int
+	)
+
+	payload, err = genUserAsPayload(data)
+	if err != nil {
+		return nil, err
+	}
+
+	code, err = q.RequestWithoutData(http.MethodPost, "/securityRealm/createAccountByAdmin",
+		map[string]string{httpdownloader.ContentType: httpdownloader.ApplicationForm}, payload, 200)
+	if code == 302 {
+		return &data, nil
+	}
+	return &data, err
+}
+
 // CreateToken create a token in Jenkins
 func (q *Client) CreateToken(targetUser, newTokenName string) (status *Token, err error) {
 	if newTokenName == "" {

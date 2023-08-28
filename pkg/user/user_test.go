@@ -1,6 +1,8 @@
 package user
 
 import (
+	"fmt"
+
 	"github.com/golang/mock/gomock"
 	"github.com/jenkins-zh/jenkins-client/pkg/mock/mhttp"
 	. "github.com/onsi/ginkgo"
@@ -97,6 +99,33 @@ var _ = Describe("user test", func() {
 			Expect(err).To(BeNil())
 			Expect(token).NotTo(BeNil())
 			Expect(token.Status).To(Equal("ok"))
+		})
+	})
+
+	Context("CreateWithParams", func() {
+		It("should success", func() {
+			targetUserName := "fakeName2"
+			targetEmail := fmt.Sprintf("%s@gmail.com", targetUserName)
+			userClient.UserName = username
+			userClient.Token = password
+
+			PrepareCreateUserWithParams(roundTripper, userClient.URL, username, password, targetUserName)
+
+			data := ForCreate{
+				Username:  targetUserName,
+				Password1: "fakePass",
+				Password2: "fakePass",
+				Email:     targetEmail,
+				User:      User{FullName: targetUserName},
+			}
+
+			result, err := userClient.CreateWithParams(data)
+			Expect(err).To(BeNil())
+			Expect(result).NotTo(BeNil())
+			Expect(result.Username).To(Equal(targetUserName))
+			Expect(result.Password1).To(Equal(result.Password2))
+			Expect(result.Password1).NotTo(Equal(""))
+			Expect(result.Email).To(Equal(targetEmail))
 		})
 	})
 })
