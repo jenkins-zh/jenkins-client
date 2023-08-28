@@ -134,9 +134,9 @@ func (q *Client) CreateWithParams(data ForCreate) (user *ForCreate, err error) {
 	code, err = q.RequestWithoutData(http.MethodPost, "/securityRealm/createAccountByAdmin",
 		map[string]string{httpdownloader.ContentType: httpdownloader.ApplicationForm}, payload, 200)
 	if code == 302 {
-		err = nil
+		return &data, nil
 	}
-	return &data, nil
+	return &data, err
 }
 
 // CreateToken create a token in Jenkins
