@@ -18,7 +18,7 @@ import (
 	"moul.io/http2curl"
 
 	ext "github.com/linuxsuren/cobra-extension/version"
-	httpdownloader "github.com/linuxsuren/http-downloader/pkg"
+	httpdownloader "github.com/linuxsuren/http-downloader/pkg/net"
 )
 
 // language is for global Accept Language
