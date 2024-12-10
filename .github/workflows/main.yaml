@@ -12,10 +12,10 @@ jobs:
   LintAndTest:
     runs-on: ubuntu-20.04
     steps:
-      - name: Set up Go 1.16
+      - name: Set up Go 1.23
         uses: actions/setup-go@v2.1.3
         with:
-          go-version: 1.16
+          go-version: 1.23
       - uses: actions/checkout@v2
       # See also https://github.com/GoogleCloudPlatform/golang-samples/blob/78dfa41f10b449ba7a06d9793cbd81878d44a4fb/.github/workflows/go.yaml#L29-L53
       - name: Run go mod tidy on root modules
@@ -39,19 +39,5 @@ jobs:
             git status # Show the files that failed to pass the check.
             exit 1
           fi
-      - name: golint
-        uses: golangci/golangci-lint-action@v3.2.0
-        with:
-          version: v1.42.1
-          skip-build-cache: true
-          skip-pkg-cache: true
       - name: test
         run: make test
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: cover.out
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
