@@ -43,6 +43,8 @@ type JenkinsCore struct {
 	Debug        bool
 	Output       io.Writer
 	RoundTripper http.RoundTripper
+
+	Cookies []*http.Cookie
 }
 
 // JenkinsCrumb crumb for Jenkins
@@ -381,6 +383,10 @@ func (j *JenkinsCore) Request(method, api string, headers map[string]string, pay
 		return
 	}
 
+	for _, c := range j.Cookies {
+		req.AddCookie(c)
+	}
+
 	for k, v := range headers {
 		req.Header.Add(k, v)
 	}
@@ -391,6 +397,9 @@ func (j *JenkinsCore) Request(method, api string, headers map[string]string, pay
 
 	client := j.GetClient()
 	if response, err = client.Do(req); err == nil {
+		if len(response.Cookies()) > 0 {
+			j.Cookies = response.Cookies()
+		}
 		statusCode = response.StatusCode
 		data, err = ioutil.ReadAll(response.Body)
 	}
